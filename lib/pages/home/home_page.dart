@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ober_version_2/driver/driver_page.dart';
-import 'package:ober_version_2/passenger/confirm_destination_page.dart';
+import 'package:ober_version_2/pages/driver/driver_page.dart';
+import 'package:ober_version_2/pages/passenger/confirm_destination_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
