@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "274546699209",
+    "project_id": "ober-version-2",
+    "storage_bucket": "ober-version-2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274546699209:android:638ded3edf42f57a6a1618",
+        "android_client_info": {
+          "package_name": "com.example.ober_version_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHiMaCtVIvbDjatO-o0fWHVohdohkS__M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274546699209:android:3d8f04ed3a11cea26a1618",
+        "android_client_info": {
+          "package_name": "com.example.ober_version_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHiMaCtVIvbDjatO-o0fWHVohdohkS__M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
