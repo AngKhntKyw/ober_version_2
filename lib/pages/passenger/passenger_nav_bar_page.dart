@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
-import 'package:ober_version_2/pages/passenger/passenger_home_page.dart';
-import 'package:ober_version_2/pages/passenger/passenger_profile_page.dart';
+import 'package:ober_version_2/pages/passenger/home/passenger_home_page.dart';
+import 'package:ober_version_2/pages/passenger/profile/passenger_profile_page.dart';
 
 class PassengerNavBarPage extends StatefulWidget {
   const PassengerNavBarPage({super.key});

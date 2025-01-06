@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
-import 'package:ober_version_2/pages/passenger/confirm_destination_page.dart';
+import 'package:ober_version_2/pages/passenger/ride/confirm_destination_page.dart';
 
 class PassengerHomePage extends StatefulWidget {
   const PassengerHomePage({super.key});

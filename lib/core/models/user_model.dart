@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:ober_version_2/core/models/car_model.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
@@ -12,6 +13,8 @@ class UserModel with _$UserModel {
     required String email,
     required String fcm_token,
     required String role,
+    required String profile_image,
+    CarModel? car,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

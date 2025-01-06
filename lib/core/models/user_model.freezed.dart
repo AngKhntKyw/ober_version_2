@@ -25,6 +25,8 @@ mixin _$UserModel {
   String get email => throw _privateConstructorUsedError;
   String get fcm_token => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
+  String get profile_image => throw _privateConstructorUsedError;
+  CarModel? get car => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -42,7 +44,11 @@ abstract class $UserModelCopyWith<$Res> {
       String name,
       String email,
       String fcm_token,
-      String role});
+      String role,
+      String profile_image,
+      CarModel? car});
+
+  $CarModelCopyWith<$Res>? get car;
 }
 
 /// @nodoc
@@ -63,6 +69,8 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? email = null,
     Object? fcm_token = null,
     Object? role = null,
+    Object? profile_image = null,
+    Object? car = freezed,
   }) {
     return _then(_value.copyWith(
       user_id: null == user_id
@@ -85,7 +93,27 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.role
           : role // ignore: cast_nullable_to_non_nullable
               as String,
+      profile_image: null == profile_image
+          ? _value.profile_image
+          : profile_image // ignore: cast_nullable_to_non_nullable
+              as String,
+      car: freezed == car
+          ? _value.car
+          : car // ignore: cast_nullable_to_non_nullable
+              as CarModel?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $CarModelCopyWith<$Res>? get car {
+    if (_value.car == null) {
+      return null;
+    }
+
+    return $CarModelCopyWith<$Res>(_value.car!, (value) {
+      return _then(_value.copyWith(car: value) as $Val);
+    });
   }
 }
 
@@ -102,7 +130,12 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String name,
       String email,
       String fcm_token,
-      String role});
+      String role,
+      String profile_image,
+      CarModel? car});
+
+  @override
+  $CarModelCopyWith<$Res>? get car;
 }
 
 /// @nodoc
@@ -121,6 +154,8 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? email = null,
     Object? fcm_token = null,
     Object? role = null,
+    Object? profile_image = null,
+    Object? car = freezed,
   }) {
     return _then(_$UserModelImpl(
       user_id: null == user_id
@@ -143,6 +178,14 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.role
           : role // ignore: cast_nullable_to_non_nullable
               as String,
+      profile_image: null == profile_image
+          ? _value.profile_image
+          : profile_image // ignore: cast_nullable_to_non_nullable
+              as String,
+      car: freezed == car
+          ? _value.car
+          : car // ignore: cast_nullable_to_non_nullable
+              as CarModel?,
     ));
   }
 }
@@ -155,7 +198,9 @@ class _$UserModelImpl extends _UserModel {
       required this.name,
       required this.email,
       required this.fcm_token,
-      required this.role})
+      required this.role,
+      required this.profile_image,
+      this.car})
       : super._();
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -171,10 +216,14 @@ class _$UserModelImpl extends _UserModel {
   final String fcm_token;
   @override
   final String role;
+  @override
+  final String profile_image;
+  @override
+  final CarModel? car;
 
   @override
   String toString() {
-    return 'UserModel(user_id: $user_id, name: $name, email: $email, fcm_token: $fcm_token, role: $role)';
+    return 'UserModel(user_id: $user_id, name: $name, email: $email, fcm_token: $fcm_token, role: $role, profile_image: $profile_image, car: $car)';
   }
 
   @override
@@ -187,13 +236,16 @@ class _$UserModelImpl extends _UserModel {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.fcm_token, fcm_token) ||
                 other.fcm_token == fcm_token) &&
-            (identical(other.role, role) || other.role == role));
+            (identical(other.role, role) || other.role == role) &&
+            (identical(other.profile_image, profile_image) ||
+                other.profile_image == profile_image) &&
+            (identical(other.car, car) || other.car == car));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, user_id, name, email, fcm_token, role);
+  int get hashCode => Object.hash(
+      runtimeType, user_id, name, email, fcm_token, role, profile_image, car);
 
   @JsonKey(ignore: true)
   @override
@@ -215,7 +267,9 @@ abstract class _UserModel extends UserModel {
       required final String name,
       required final String email,
       required final String fcm_token,
-      required final String role}) = _$UserModelImpl;
+      required final String role,
+      required final String profile_image,
+      final CarModel? car}) = _$UserModelImpl;
   const _UserModel._() : super._();
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -231,6 +285,10 @@ abstract class _UserModel extends UserModel {
   String get fcm_token;
   @override
   String get role;
+  @override
+  String get profile_image;
+  @override
+  CarModel? get car;
   @override
   @JsonKey(ignore: true)
   _$$UserModelImplCopyWith<_$UserModelImpl> get copyWith =>
