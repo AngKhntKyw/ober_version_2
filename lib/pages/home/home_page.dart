@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/driver/driver_page.dart';
 import 'package:ober_version_2/pages/home/home_controller.dart';
-import 'package:ober_version_2/pages/passenger/passenger_page.dart';
+import 'package:ober_version_2/pages/passenger/passenger_nav_bar_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
             ? const Scaffold(body: LoadingIndicators())
             : homeController.userModel?.role == "driver"
                 ? const DriverPage()
-                : const PassengerPage();
+                : const PassengerNavBarPage();
       },
     );
   }

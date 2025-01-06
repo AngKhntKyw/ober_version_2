@@ -87,7 +87,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           alignment: Alignment.center,
                           dropdownColor: AppPallete.white,
                           elevation: 0,
-                          focusColor: Colors.red,
                           enableFeedback: true,
                           icon: const Icon(Icons.arrow_drop_down),
                           validator: (value) {
