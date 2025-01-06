@@ -3,16 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class SignUpController extends GetxController {
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseMessaging fireMessage = FirebaseMessaging.instance;
 
-  void signUp({
+  Future<UserCredential?> signUp({
     required String name,
     required String email,
     required String password,
+    required String role,
   }) async {
     try {
       UserCredential user = await fireAuth.createUserWithEmailAndPassword(
@@ -27,15 +29,18 @@ class SignUpController extends GetxController {
         name: name,
         email: email,
         fcm_token: fcmToken!,
-        role: "driver",
+        role: role,
       );
 
       await fireStore
           .collection("users")
           .doc(fireAuth.currentUser!.uid)
           .set(userModel.toJson());
+
+      return user;
     } catch (e) {
-      rethrow;
+      toast(e.toString());
+      return null;
     }
   }
 }

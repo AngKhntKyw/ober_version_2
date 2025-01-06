@@ -3,19 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
 
-class DriverPage extends StatefulWidget {
-  const DriverPage({super.key});
+class PassengerPage extends StatefulWidget {
+  const PassengerPage({super.key});
 
   @override
-  State<DriverPage> createState() => _DriverPageState();
+  State<PassengerPage> createState() => _PassengerPageState();
 }
 
-class _DriverPageState extends State<DriverPage> {
+class _PassengerPageState extends State<PassengerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Driver"),
+        title: const Text("Passenger"),
         actions: [
           IconButton(
               onPressed: () async {

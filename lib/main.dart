@@ -6,6 +6,7 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/firebase_options.dart';
 import 'package:ober_version_2/core/themes/light_theme.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 void main() async {
   await dotenv.load();
@@ -24,11 +25,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Ober Version 2',
-      debugShowCheckedModeBanner: false,
-      theme: LightTheme.lightTheme,
-      home: const AuthGate(),
+    return OverlaySupport.global(
+      child: GetMaterialApp(
+        title: 'Ober Version 2',
+        debugShowCheckedModeBanner: false,
+        theme: LightTheme.lightTheme,
+        home: const AuthGate(),
+      ),
     );
   }
 }

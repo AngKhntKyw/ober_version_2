@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/driver/driver_page.dart';
-import 'package:ober_version_2/pages/passenger/confirm_destination_page.dart';
+import 'package:ober_version_2/pages/home/home_controller.dart';
+import 'package:ober_version_2/pages/passenger/passenger_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,45 +15,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Image.asset(
-              "assets/images/wallpaper.jpg",
-              fit: BoxFit.cover,
-              colorBlendMode: BlendMode.xor,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    Get.to(
-                      () => const DriverPage(),
-                      curve: const ElasticInCurve(),
-                    );
-                  },
-                  child: const Text("Driver"),
-                ),
-              ),
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    Get.to(
-                      () => const ConfirmDestinationPage(),
-                      curve: const ElasticInCurve(),
-                    );
-                  },
-                  child: const Text("Passenger"),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return GetBuilder(
+      init: HomeController(),
+      builder: (homeController) {
+        return homeController.userModel == null
+            ? const Scaffold(body: LoadingIndicators())
+            : homeController.userModel?.role == "driver"
+                ? const DriverPage()
+                : const PassengerPage();
+      },
     );
   }
 }
