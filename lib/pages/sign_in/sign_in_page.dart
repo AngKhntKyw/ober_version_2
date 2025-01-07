@@ -22,6 +22,13 @@ class _SignInPageState extends State<SignInPage> {
   bool isLoading = false;
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
 

@@ -50,6 +50,7 @@ class _ConfirmPickUpPageState extends State<ConfirmPickUpPage> {
                     longitude: result.latLng!.longitude,
                     rotation: 0,
                   );
+
                   Get.to(() => const ConfrimRidePage());
                 },
                 onMapCreated: (controller) {
@@ -63,7 +64,7 @@ class _ConfirmPickUpPageState extends State<ConfirmPickUpPage> {
                             currentLocation.longitude!,
                           ),
                           zoom: 18,
-                          bearing: 90,
+                          // bearing: 90,
                         ),
                       ),
                     );

@@ -11,6 +11,7 @@ _$CarModelImpl _$$CarModelImplFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       plate_number: json['plate_number'] as String,
       color: json['color'] as String,
+      available: json['available'] as bool,
     );
 
 Map<String, dynamic> _$$CarModelImplToJson(_$CarModelImpl instance) =>
@@ -18,4 +19,5 @@ Map<String, dynamic> _$$CarModelImplToJson(_$CarModelImpl instance) =>
       'name': instance.name,
       'plate_number': instance.plate_number,
       'color': instance.color,
+      'available': instance.available,
     };

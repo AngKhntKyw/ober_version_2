@@ -10,6 +10,7 @@ class CarModel with _$CarModel {
     required String name,
     required String plate_number,
     required String color,
+    required bool available,
   }) = _CarModel;
 
   factory CarModel.fromJson(Map<String, dynamic> json) =>

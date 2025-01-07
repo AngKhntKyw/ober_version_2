@@ -63,7 +63,7 @@ class _ConfirmDestinationPageState extends State<ConfirmDestinationPage> {
                             currentLocation.longitude!,
                           ),
                           zoom: 18,
-                          bearing: 90,
+                          // bearing: 90,
                         ),
                       ),
                     );

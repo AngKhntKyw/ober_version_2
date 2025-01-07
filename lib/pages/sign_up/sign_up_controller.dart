@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:ober_version_2/core/models/car_model.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
 import 'package:overlay_support/overlay_support.dart';
 
@@ -15,6 +16,7 @@ class SignUpController extends GetxController {
     required String email,
     required String password,
     required String role,
+    CarModel? carModel,
   }) async {
     try {
       UserCredential user = await fireAuth.createUserWithEmailAndPassword(
@@ -24,7 +26,7 @@ class SignUpController extends GetxController {
       await user.user!.updatePhotoURL(
           "https://i.pinimg.com/564x/ac/45/51/ac4551cc2fd9359885298075a2b5e9d7.jpg");
 
-      final userModel = UserModel(
+      final userModelForPassenger = UserModel(
         user_id: fireAuth.currentUser!.uid,
         name: name,
         email: email,
@@ -34,10 +36,22 @@ class SignUpController extends GetxController {
             "https://i.pinimg.com/564x/ac/45/51/ac4551cc2fd9359885298075a2b5e9d7.jpg",
       );
 
-      await fireStore
-          .collection("users")
-          .doc(fireAuth.currentUser!.uid)
-          .set(userModel.toJson());
+      final userModelForDriver = UserModel(
+        user_id: fireAuth.currentUser!.uid,
+        name: name,
+        email: email,
+        fcm_token: fcmToken,
+        role: role,
+        profile_image:
+            "https://i.pinimg.com/564x/ac/45/51/ac4551cc2fd9359885298075a2b5e9d7.jpg",
+        car: carModel,
+      );
+
+      await fireStore.collection("users").doc(fireAuth.currentUser!.uid).set(
+            role == "passenger"
+                ? userModelForPassenger.toJson()
+                : userModelForDriver.toJson(),
+          );
 
       return user;
     } catch (e) {

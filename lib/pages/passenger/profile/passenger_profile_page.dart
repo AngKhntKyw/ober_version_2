@@ -51,6 +51,7 @@ class _PassengerProfilePageState extends State<PassengerProfilePage> {
                       ),
                       Text(passengerProfileController.userModel!.name),
                       Text(passengerProfileController.userModel!.email),
+                      Text(passengerProfileController.userModel!.role),
                     ],
                   ),
                 ),

@@ -17,6 +17,10 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       car: json['car'] == null
           ? null
           : CarModel.fromJson(json['car'] as Map<String, dynamic>),
+      current_address: json['current_address'] == null
+          ? null
+          : AddressModel.fromJson(
+              json['current_address'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -27,5 +31,6 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'fcm_token': instance.fcm_token,
       'role': instance.role,
       'profile_image': instance.profile_image,
-      'car': instance.car,
+      'car': instance.car?.toJson(),
+      'current_address': instance.current_address?.toJson(),
     };

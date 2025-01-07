@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:ober_version_2/core/models/car_model.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/elevated_buttons.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
@@ -22,8 +23,23 @@ class _SignUpPageState extends State<SignUpPage> {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final carNameController = TextEditingController();
+  final plateNumberController = TextEditingController();
+  final colorController = TextEditingController();
+
   bool isLoading = false;
   String? selectedRole;
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    carNameController.dispose();
+    plateNumberController.dispose();
+    colorController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +113,34 @@ class _SignUpPageState extends State<SignUpPage> {
                           },
                         ),
                         SizedBox(height: size.height / 40),
+
+                        //for driver
+                        if (selectedRole != null && selectedRole == 'driver')
+                          ListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              TextFormFields(
+                                controller: carNameController,
+                                hintText: 'car name',
+                                isObscureText: false,
+                              ),
+                              SizedBox(height: size.height / 40),
+                              TextFormFields(
+                                controller: plateNumberController,
+                                hintText: 'plate number',
+                                isObscureText: false,
+                              ),
+                              SizedBox(height: size.height / 40),
+                              TextFormFields(
+                                controller: colorController,
+                                hintText: 'color',
+                                isObscureText: false,
+                              ),
+                              SizedBox(height: size.height / 40),
+                            ],
+                          ),
+
                         ElevatedButtons(
                           onPressed: () async {
                             if (formKey.currentState!.validate()) {
@@ -109,6 +153,15 @@ class _SignUpPageState extends State<SignUpPage> {
                                 email: emailController.text.trim(),
                                 password: passwordController.text.trim(),
                                 role: selectedRole ?? 'passenger',
+                                carModel: selectedRole == "driver"
+                                    ? CarModel(
+                                        name: carNameController.text.trim(),
+                                        plate_number:
+                                            plateNumberController.text.trim(),
+                                        color: colorController.text.trim(),
+                                        available: true,
+                                      )
+                                    : null,
                               );
                               setState(() {
                                 isLoading = false;
