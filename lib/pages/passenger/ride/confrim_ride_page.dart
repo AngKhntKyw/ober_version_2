@@ -46,6 +46,8 @@ class _ConfrimRidePageState extends State<ConfrimRidePage> {
               return Stack(
                 children: [
                   GoogleMap(
+                    trafficEnabled: true,
+                    liteModeEnabled: true,
                     initialCameraPosition: const CameraPosition(
                       target: LatLng(0, 0),
                     ),
