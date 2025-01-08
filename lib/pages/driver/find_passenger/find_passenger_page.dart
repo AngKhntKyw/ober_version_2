@@ -25,18 +25,28 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
         return Scaffold(
           body: StreamBuilder(
             stream: location.onLocationChanged,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+            builder: (context, locationSnapshot) {
+              if (locationSnapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingIndicators();
               }
-              if (snapshot.hasError) {
+              if (locationSnapshot.hasError) {
                 return const Center(
-                  child: Text("An error occurred"),
+                  child: Text("Location error occurred"),
                 );
               }
 
-              final currentLocation = snapshot.data!;
+              findPassengerController.currentLocation = locationSnapshot.data!;
 
+              mapController.future.then((mapController) {
+                mapController.animateCamera(
+                  CameraUpdate.newLatLng(
+                    LatLng(
+                      findPassengerController.currentLocation!.latitude!,
+                      findPassengerController.currentLocation!.longitude!,
+                    ),
+                  ),
+                );
+              });
               return GoogleMap(
                 initialCameraPosition:
                     const CameraPosition(target: LatLng(0, 0)),
@@ -50,8 +60,8 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                       CameraUpdate.newCameraPosition(
                         CameraPosition(
                           target: LatLng(
-                            currentLocation.latitude!,
-                            currentLocation.longitude!,
+                            findPassengerController.currentLocation!.latitude!,
+                            findPassengerController.currentLocation!.longitude!,
                           ),
                           zoom: 18,
                         ),
@@ -63,8 +73,12 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                   Marker(
                     markerId: const MarkerId('current location'),
                     position: LatLng(
-                        currentLocation.latitude!, currentLocation.longitude!),
+                      findPassengerController.currentLocation!.latitude!,
+                      findPassengerController.currentLocation!.longitude!,
+                    ),
                     icon: findPassengerController.markerIcon,
+                    rotation: findPassengerController.markerRotation,
+                    anchor: const Offset(0.5, 0.5),
                   ),
                 },
               );

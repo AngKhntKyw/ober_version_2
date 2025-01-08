@@ -23,6 +23,7 @@ class RideModel with _$RideModel {
   factory RideModel.fromJson(Map<String, dynamic> json) =>
       _$RideModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
