@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compassx/compassx.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,11 +12,14 @@ class FindPassengerController extends GetxController {
   final Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
   BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
-  LocationData? currentLocation;
+  // LocationData? currentLocation;
+  var currentLocation = Rx<LocationData?>(null);
   LocationData? previousLocation;
   double markerRotation = 0.0;
   double compassHeading = 0.0;
   double positionBearing = 0.0;
+
+  final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
   @override
   void onInit() {
@@ -33,8 +38,9 @@ class FindPassengerController extends GetxController {
   void getCurrentLocation() {
     locationSubscription = location.onLocationChanged.listen(
       (event) async {
-        currentLocation != null ? previousLocation = currentLocation : null;
-        currentLocation = event;
+        log(event.toString());
+
+        currentLocation.value = event;
         update();
 
         if (mapController.isCompleted) {
@@ -44,8 +50,8 @@ class FindPassengerController extends GetxController {
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
                     target: LatLng(
-                      currentLocation!.latitude!,
-                      currentLocation!.longitude!,
+                      currentLocation.value!.latitude!,
+                      currentLocation.value!.longitude!,
                     ),
                     zoom: 18,
                   ),
@@ -89,5 +95,10 @@ class FindPassengerController extends GetxController {
       markerRotation += 360;
     }
     update();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getRides() {
+    log('call');
+    return fireStore.collection("rides").snapshots();
   }
 }
