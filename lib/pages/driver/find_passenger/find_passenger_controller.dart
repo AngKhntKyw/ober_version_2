@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:ober_version_2/core/models/ride_model.dart';
 
 class FindPassengerController extends GetxController {
   final location = Location();
@@ -14,19 +15,20 @@ class FindPassengerController extends GetxController {
   BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
   var currentLocation = Rx<LocationData?>(null);
   var previousLocation = Rx<LocationData?>(null);
-  var currentMarkerPosition = Rx<LatLng>(const LatLng(0, 0));
-
   var markerRotation = Rx<double>(0);
   var compassHeading = Rx<double>(0);
   var positionBearing = Rx<double>(0);
+  bool isAnimating = false;
 
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
+  var rides = Rx<List<RideModel>>([]);
 
   @override
   void onInit() {
     getCurrentLocation();
     addCustomMarker();
     changeCompass();
+    getRides();
     super.onInit();
   }
 
@@ -34,44 +36,45 @@ class FindPassengerController extends GetxController {
   void onClose() {
     locationSubscription?.cancel();
     currentLocation.value = null;
+    previousLocation.value = null;
     super.onClose();
   }
 
+  bool hasSignificantChange(LocationData start, LocationData end) {
+    const double threshold = 0.0001;
+    double distance = ((end.latitude! - start.latitude!).abs() +
+        (end.longitude! - start.longitude!).abs());
+    return distance > threshold;
+  }
+
   void getCurrentLocation() {
-    locationSubscription = location.onLocationChanged.listen(
-      (event) async {
-        if (currentLocation.value != null) {
-          previousLocation.value = currentLocation.value;
-        }
+    locationSubscription = location.onLocationChanged.listen((event) async {
+      if (currentLocation.value != null &&
+          !hasSignificantChange(currentLocation.value!, event)) {
+        return;
+      }
 
-        currentLocation.value = event;
+      previousLocation.value = currentLocation.value ?? event;
+      currentLocation.value = event;
 
-        if (mapController.isCompleted) {
-          mapController.future.then(
-            (value) {
-              value.animateCamera(
-                CameraUpdate.newCameraPosition(
-                  CameraPosition(
-                    target: LatLng(
-                      currentLocation.value!.latitude!,
-                      currentLocation.value!.longitude!,
-                    ),
-                    zoom: 18,
-                  ),
+      if (mapController.isCompleted) {
+        mapController.future.then(
+          (controller) async {
+            await controller.animateCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(
+                  target: LatLng(event.latitude!, event.longitude!),
+                  zoom: 18,
                 ),
-              );
-            },
-          );
-        }
-
-        if (previousLocation.value != null) {
-          animateMarkerMovement(
-            previousLocation.value!,
-            currentLocation.value!,
-          );
-        }
-      },
-    );
+              ),
+            );
+            // await controller.animateCamera(CameraUpdate.newLatLng(
+            //     LatLng(event.latitude!, event.longitude!)));
+          },
+        );
+      }
+      animateMarkerMovement(previousLocation.value!, currentLocation.value!);
+    });
   }
 
   void addCustomMarker() {
@@ -107,7 +110,10 @@ class FindPassengerController extends GetxController {
   }
 
   void animateMarkerMovement(LocationData start, LocationData end) {
-    const duration = 1000;
+    if (isAnimating) return;
+
+    isAnimating = true;
+    const duration = 3000;
     const frames = 60;
     const interval = duration ~/ frames;
 
@@ -120,25 +126,43 @@ class FindPassengerController extends GetxController {
 
         if (elapsedTime >= duration) {
           timer.cancel();
-          currentMarkerPosition.value = LatLng(end.latitude!, end.longitude!);
+          currentLocation.value = end;
+          isAnimating = false;
           return;
         }
 
         double t = elapsedTime / duration;
-        double latitude = lerp(start.latitude!, end.latitude!, t);
-        double longitude = lerp(start.longitude!, end.longitude!, t);
+        double latitude = _lerp(start.latitude!, end.latitude!, t);
+        double longitude = _lerp(start.longitude!, end.longitude!, t);
 
-        currentMarkerPosition.value = LatLng(latitude, longitude);
+        currentLocation.value = LocationData.fromMap({
+          'latitude': latitude,
+          'longitude': longitude,
+          'accuracy': end.accuracy,
+          'altitude': end.altitude,
+          'speed': end.speed,
+          'speedAccuracy': end.speedAccuracy,
+          'heading': end.heading,
+          'time': end.time,
+        });
       },
     );
   }
 
-  double lerp(double start, double end, double t) {
+  double _lerp(double start, double end, double t) {
     return start + (end - start) * t;
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getRides() {
-    log('call');
-    return fireStore.collection("rides").snapshots();
+  void getRides() {
+    fireStore.collection('rides').snapshots().listen(
+      (event) {
+        List<QueryDocumentSnapshot<Map<String, dynamic>>> querySnapshot =
+            event.docs;
+        rides.value = querySnapshot.map((doc) {
+          return RideModel.fromJson(doc.data());
+        }).toList();
+      },
+    );
+    log("Rides : ${rides.value.length}");
   }
 }

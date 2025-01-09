@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -45,14 +44,14 @@ class FindPassengerPage extends StatelessWidget {
                       markers: {
                         Marker(
                           markerId: const MarkerId('current location'),
-                          // position: LatLng(
-                          //   findPassengerController
-                          //       .currentLocation.value!.latitude!,
-                          //   findPassengerController
-                          //       .currentLocation.value!.longitude!,
-                          // ),
-                          position: findPassengerController
-                              .currentMarkerPosition.value,
+                          position: LatLng(
+                            findPassengerController
+                                .currentLocation.value!.latitude!,
+                            findPassengerController
+                                .currentLocation.value!.longitude!,
+                          ),
+                          // position: findPassengerController
+                          //     .currentMarkerPosition.value,
                           icon: findPassengerController.markerIcon,
                           rotation:
                               findPassengerController.markerRotation.value,
@@ -83,16 +82,8 @@ class FindPassengerPage extends StatelessWidget {
                     //           mainAxisSize: MainAxisSize.min,
                     //           children: [
                     //             SizedBox(height: size.height / 40),
-                    //             const Text("Current Location"),
-                    //             Text(
-                    //               findPassengerController.currentLocation.value
-                    //                   .toString(),
-                    //             ),
-                    //             const Text("Previous Location"),
-                    //             Text(
-                    //               findPassengerController.previousLocation.value
-                    //                   .toString(),
-                    //             ),
+                    //             Text(findPassengerController.rides.value.length
+                    //                 .toString()),
                     //           ],
                     //         ),
                     //       ),

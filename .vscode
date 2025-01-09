@@ -1,0 +1,7 @@
+{
+  "name": "Over version 2",
+  "type": "dart",
+  "request": "launch",
+  "program": "lib/main.dart",
+  "flutterMode": "profile"
+}
