@@ -12,12 +12,13 @@ class FindPassengerController extends GetxController {
   final Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
   BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
-  // LocationData? currentLocation;
   var currentLocation = Rx<LocationData?>(null);
-  LocationData? previousLocation;
-  double markerRotation = 0.0;
-  double compassHeading = 0.0;
-  double positionBearing = 0.0;
+  var previousLocation = Rx<LocationData?>(null);
+  var currentMarkerPosition = Rx<LatLng>(const LatLng(0, 0));
+
+  var markerRotation = Rx<double>(0);
+  var compassHeading = Rx<double>(0);
+  var positionBearing = Rx<double>(0);
 
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
@@ -32,16 +33,18 @@ class FindPassengerController extends GetxController {
   @override
   void onClose() {
     locationSubscription?.cancel();
+    currentLocation.value = null;
     super.onClose();
   }
 
   void getCurrentLocation() {
     locationSubscription = location.onLocationChanged.listen(
       (event) async {
-        log(event.toString());
+        if (currentLocation.value != null) {
+          previousLocation.value = currentLocation.value;
+        }
 
         currentLocation.value = event;
-        update();
 
         if (mapController.isCompleted) {
           mapController.future.then(
@@ -58,6 +61,13 @@ class FindPassengerController extends GetxController {
                 ),
               );
             },
+          );
+        }
+
+        if (previousLocation.value != null) {
+          animateMarkerMovement(
+            previousLocation.value!,
+            currentLocation.value!,
           );
         }
       },
@@ -79,22 +89,52 @@ class FindPassengerController extends GetxController {
 
   void changeCompass() {
     CompassX.events.listen((event) {
-      compassHeading = event.heading;
-      markerRotation = (compassHeading - positionBearing) % 360;
-      if (markerRotation < 0) {
-        markerRotation += 360;
+      compassHeading.value = event.heading;
+      markerRotation.value =
+          (compassHeading.value - positionBearing.value) % 360;
+      if (markerRotation.value < 0) {
+        markerRotation.value += 360;
       }
-      update();
     });
   }
 
   void onCameraMove(CameraPosition position) {
-    positionBearing = position.bearing;
-    markerRotation = (compassHeading - position.bearing) % 360;
-    if (markerRotation < 0) {
-      markerRotation += 360;
+    positionBearing.value = position.bearing;
+    markerRotation.value = (compassHeading.value - position.bearing) % 360;
+    if (markerRotation.value < 0) {
+      markerRotation.value += 360;
     }
-    update();
+  }
+
+  void animateMarkerMovement(LocationData start, LocationData end) {
+    const duration = 1000;
+    const frames = 60;
+    const interval = duration ~/ frames;
+
+    int elapsedTime = 0;
+
+    Timer.periodic(
+      const Duration(milliseconds: interval),
+      (timer) {
+        elapsedTime += interval;
+
+        if (elapsedTime >= duration) {
+          timer.cancel();
+          currentMarkerPosition.value = LatLng(end.latitude!, end.longitude!);
+          return;
+        }
+
+        double t = elapsedTime / duration;
+        double latitude = lerp(start.latitude!, end.latitude!, t);
+        double longitude = lerp(start.longitude!, end.longitude!, t);
+
+        currentMarkerPosition.value = LatLng(latitude, longitude);
+      },
+    );
+  }
+
+  double lerp(double start, double end, double t) {
+    return start + (end - start) * t;
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getRides() {
