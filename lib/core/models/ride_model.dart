@@ -27,15 +27,14 @@ class RideModel with _$RideModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'passenger': passenger.toJson(), // Convert nested UserModel to JSON
-      'pick_up': pick_up.toJson(), // Convert nested AddressModel to JSON
-      'destination':
-          destination.toJson(), // Convert nested AddressModel to JSON
+      'passenger': passenger.toJson(),
+      'pick_up': pick_up.toJson(),
+      'destination': destination.toJson(),
       'fare': fare,
       'distance': distance,
       'duration': duration,
       'status': status,
-      'driver': driver?.toJson(), // Convert optional driver model if present
+      'driver': driver?.toJson(),
     };
   }
 }

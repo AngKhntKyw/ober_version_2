@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compassx/compassx.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:ober_version_2/core/models/car_model.dart';
+import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
+import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_controller.dart';
 import 'package:overlay_support/overlay_support.dart';
 
-class FindPassengerController extends GetxController {
+class ProcessRideController extends GetxController {
   final location = Location();
   final Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
@@ -24,22 +27,21 @@ class FindPassengerController extends GetxController {
   var compassHeading = Rx<double>(0);
   var positionBearing = Rx<double>(0);
   bool isAnimating = false;
-  var allRides = Rx<List<RideModel>>([]);
-  var ridesWithin1km = Rx<List<RideModel>>([]);
+
+  var acceptedRide = Rx<RideModel?>(null);
+  var routeToPickUp = Rx<List<LatLng>>([]);
+  final findPassengerController = Get.put(FindPassengerController());
 
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
   UserModel? userModel;
 
-  var acceptedRide = Rx<RideModel?>(null);
-  // var routeToPickUp = Rx<List<LatLng>>([]);
-
   @override
   void onInit() {
+    acceptedRide.value = findPassengerController.acceptedRide.value;
     getCurrentLocation();
     addCustomMarker();
     changeCompass();
-    getRides();
     getUserInfo();
     super.onInit();
   }
@@ -49,10 +51,7 @@ class FindPassengerController extends GetxController {
     locationSubscription?.cancel();
     currentLocation.value = null;
     previousLocation.value = null;
-    allRides.value.clear();
-    ridesWithin1km.value.clear();
     isAnimating = false;
-    acceptedRide.value = null;
     super.onClose();
   }
 
@@ -102,13 +101,10 @@ class FindPassengerController extends GetxController {
         );
       }
       animateMarkerMovement(previousLocation.value!, currentLocation.value!);
-      filterRidesWithin1km();
 
-      // if (acceptedRide.value == null) {
-      //   filterRidesWithin1km();
-      // } else {
-      //   getRouteToPickUp();
-      // }
+      getRouteToPickUp();
+      updateDriverAdress();
+      //
     });
   }
 
@@ -200,78 +196,69 @@ class FindPassengerController extends GetxController {
     return start + (end - start) * t;
   }
 
-  void getRides() {
-    fireStore.collection('rides').snapshots().listen((event) {
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> querySnapshot =
-          event.docs;
-      allRides.value = querySnapshot.map((doc) {
-        return RideModel.fromJson(doc.data());
-      }).toList();
-    });
-  }
-
-  bool checkDistanceWithin1km(RideModel passengerPickUp) {
-    double distanceInMeters = Geolocator.distanceBetween(
-      currentLocation.value!.latitude!,
-      currentLocation.value!.longitude!,
-      passengerPickUp.pick_up.latitude,
-      passengerPickUp.pick_up.longitude,
-    );
-
-    return distanceInMeters <= 1000;
-  }
-
-  void filterRidesWithin1km() {
-    ridesWithin1km.value.clear();
-
-    for (final ride in allRides.value) {
-      if (checkDistanceWithin1km(ride)) {
-        ridesWithin1km.value.add(ride);
-      }
-    }
-  }
-
-  void acceptRide({required RideModel ride}) async {
-    acceptedRide.value = ride;
+  Future<void> getRouteToPickUp() async {
     try {
-      final updatedUserModel = userModel!.copyWith(
-        car: CarModel(
-          name: userModel!.car!.name,
-          plate_number: userModel!.car!.plate_number,
-          color: userModel!.car!.color,
-          available: false,
+      PolylinePoints polylinePoints = PolylinePoints();
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
+        request: PolylineRequest(
+          origin: PointLatLng(acceptedRide.value!.pick_up.latitude,
+              acceptedRide.value!.pick_up.longitude),
+          destination: PointLatLng(currentLocation.value!.latitude!,
+              currentLocation.value!.longitude!),
+          mode: TravelMode.driving,
+          alternatives: true,
+          avoidFerries: true,
+          avoidHighways: true,
+          avoidTolls: true,
         ),
-        current_address: null,
-        email: userModel!.email,
-        fcm_token: userModel!.fcm_token,
-        name: userModel!.name,
-        profile_image: userModel!.profile_image,
-        role: "driver",
-        user_id: userModel!.user_id,
       );
 
-      await fireStore
-          .collection('users')
-          .doc(fireAuth.currentUser!.uid)
-          .update(updatedUserModel.toJson());
+      if (result.points.isNotEmpty) {
+        routeToPickUp.value.clear();
 
-      final updatedRide = ride.copyWith(
-        id: fireAuth.currentUser!.uid,
-        passenger: ride.passenger,
-        pick_up: ride.pick_up,
-        destination: ride.destination,
-        fare: ride.fare,
-        distance: ride.distance,
-        duration: ride.duration,
-        status: "goingToPickUp",
-        driver: userModel,
-      );
-      await fireStore
-          .collection('rides')
-          .doc(ride.passenger.user_id)
-          .update(updatedRide.toJson());
+        for (var point in result.points) {
+          routeToPickUp.value.add(
+            LatLng(point.latitude, point.longitude),
+          );
+        }
+      }
     } catch (e) {
       toast(e.toString());
     }
+  }
+
+  void pickUpPassenger() {
+    acceptedRide.value = acceptedRide.value!.copyWith(
+      status: "goingToDestination",
+    );
+  }
+
+  void updateDriverAdress() async {
+    // try {
+    //   final updatedRide = acceptedRide.value!.copyWith(
+    //     id: fireAuth.currentUser!.uid,
+    //     passenger: acceptedRide.value!.passenger,
+    //     pick_up: acceptedRide.value!.pick_up,
+    //     destination: acceptedRide.value!.destination,
+    //     fare: acceptedRide.value!.fare,
+    //     distance: acceptedRide.value!.distance,
+    //     duration: acceptedRide.value!.duration,
+    //     status: "goingToPickUp",
+    //     driver: userModel!.copyWith(
+    //       car: userModel!.car,
+    //       current_address: AddressModel(name: name, latitude: latitude, longitude: longitude, rotation: rotation),
+    //       email: userModel!.email,
+    //       fcm_token: userModel!.fcm_token,
+
+    //     ),
+    //   );
+    //   await fireStore
+    //       .collection('rides')
+    //       .doc(acceptedRide.value!.passenger.user_id)
+    //       .update(updatedRide.toJson());
+    // } catch (e) {
+    //   log("Failed to update driver's location: $e");
+    // }
   }
 }

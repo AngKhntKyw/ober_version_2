@@ -85,6 +85,7 @@ class RideController extends GetxController {
         distance: distance!,
         duration: duration!,
         status: "booking",
+        driver: null,
       );
 
       await fireStore
