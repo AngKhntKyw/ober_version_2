@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_controller.dart';
 
@@ -13,6 +12,7 @@ class FindPassengerPage extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
 
     final findPassengerController = Get.put(FindPassengerController());
+
     return Scaffold(
       body: Obx(
         () {
@@ -53,8 +53,10 @@ class FindPassengerPage extends StatelessWidget {
                           // position: findPassengerController
                           //     .currentMarkerPosition.value,
                           icon: findPassengerController.markerIcon,
+
                           rotation:
                               findPassengerController.markerRotation.value,
+
                           anchor: const Offset(0.5, 0.5),
                         ),
                       },

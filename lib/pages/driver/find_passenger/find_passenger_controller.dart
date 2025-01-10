@@ -37,6 +37,7 @@ class FindPassengerController extends GetxController {
     locationSubscription?.cancel();
     currentLocation.value = null;
     previousLocation.value = null;
+    isAnimating = false;
     super.onClose();
   }
 
@@ -95,6 +96,7 @@ class FindPassengerController extends GetxController {
       compassHeading.value = event.heading;
       markerRotation.value =
           (compassHeading.value - positionBearing.value) % 360;
+
       if (markerRotation.value < 0) {
         markerRotation.value += 360;
       }
@@ -113,7 +115,7 @@ class FindPassengerController extends GetxController {
     if (isAnimating) return;
 
     isAnimating = true;
-    const duration = 3000;
+    const duration = 1000;
     const frames = 60;
     const interval = duration ~/ frames;
 
@@ -150,6 +152,7 @@ class FindPassengerController extends GetxController {
   }
 
   double _lerp(double start, double end, double t) {
+    // double easedT = Curves.linear.transform(t);
     return start + (end - start) * t;
   }
 
