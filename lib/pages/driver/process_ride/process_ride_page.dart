@@ -1,3 +1,4 @@
+import 'package:action_slider/action_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -15,8 +16,9 @@ class ProcessRidePage extends StatefulWidget {
 class _ProcessRidePageState extends State<ProcessRidePage> {
   @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.sizeOf(context);
+    final size = MediaQuery.sizeOf(context);
     final processRideController = Get.put(ProcessRideController());
+
     return Scaffold(
       body: Obx(
         () {
@@ -81,7 +83,7 @@ class _ProcessRidePageState extends State<ProcessRidePage> {
                       },
                     ),
                     DraggableScrollableSheet(
-                      initialChildSize: 0.4,
+                      initialChildSize: 0.45,
                       maxChildSize: 1,
                       minChildSize: 0.2,
                       snapAnimationDuration: const Duration(milliseconds: 500),
@@ -96,17 +98,62 @@ class _ProcessRidePageState extends State<ProcessRidePage> {
                             color: AppPallete.white,
                             border: Border.all(color: AppPallete.black),
                           ),
-                          child: Column(
-                            children: [
-                              Text(processRideController
-                                  .acceptedRide.value!.status),
-                              ElevatedButton(
-                                onPressed: () {
-                                  processRideController.pickUpPassenger();
-                                },
-                                child: const Text("Pick UP"),
-                              ),
-                            ],
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(processRideController
+                                    .acceptedRide.value!.status),
+                                SizedBox(height: size.height / 40),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        "${processRideController.acceptedRide.value!.fare} MMKs"),
+                                    Text(processRideController
+                                        .acceptedRide.value!.distance),
+                                  ],
+                                ),
+                                Text(processRideController
+                                    .acceptedRide.value!.duration),
+                                SizedBox(height: size.height / 40),
+                                const Text("Destination"),
+                                Text(processRideController
+                                    .acceptedRide.value!.destination.name),
+                                SizedBox(height: size.height / 40),
+                                const Text("Pick up"),
+                                Text(processRideController
+                                    .acceptedRide.value!.pick_up.name),
+                                SizedBox(height: size.height / 40),
+                                const Divider(),
+                                SizedBox(height: size.height / 40),
+                                Center(
+                                  child: ActionSlider.standard(
+                                    sliderBehavior: SliderBehavior.move,
+                                    rolling: false,
+                                    loadingIcon: const LoadingIndicators(),
+                                    loadingAnimationCurve: Curves.easeIn,
+                                    backgroundColor: AppPallete.black,
+                                    toggleColor: AppPallete.white,
+                                    iconAlignment: Alignment.center,
+                                    child: const Text(
+                                      'Slide to pickup  passenger',
+                                      style: TextStyle(color: AppPallete.white),
+                                    ),
+                                    action: (controller) async {
+                                      controller.loading();
+                                      await Future.delayed(
+                                          const Duration(seconds: 3));
+                                      controller.success();
+                                      processRideController.pickUpPassenger();
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },

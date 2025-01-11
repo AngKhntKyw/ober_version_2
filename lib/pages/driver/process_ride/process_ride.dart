@@ -39,6 +39,7 @@ class ProcessRideController extends GetxController {
   @override
   void onInit() {
     acceptedRide.value = findPassengerController.acceptedRide.value;
+    // acceptedRideDetail();
     getCurrentLocation();
     addCustomMarker();
     changeCompass();
@@ -54,6 +55,16 @@ class ProcessRideController extends GetxController {
     isAnimating = false;
     super.onClose();
   }
+
+  // void acceptedRideDetail() async {
+  //   DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
+  //       .collection('rides')
+  //       .doc(findPassengerController.acceptedRide.value!.id)
+  //       .get();
+  //   if (snapshot.exists) {
+  //     acceptedRide.value = RideModel.fromJson(snapshot.data()!);
+  //   }
+  // }
 
   void getUserInfo() async {
     try {
@@ -235,30 +246,22 @@ class ProcessRideController extends GetxController {
   }
 
   void updateDriverAdress() async {
-    // try {
-    //   final updatedRide = acceptedRide.value!.copyWith(
-    //     id: fireAuth.currentUser!.uid,
-    //     passenger: acceptedRide.value!.passenger,
-    //     pick_up: acceptedRide.value!.pick_up,
-    //     destination: acceptedRide.value!.destination,
-    //     fare: acceptedRide.value!.fare,
-    //     distance: acceptedRide.value!.distance,
-    //     duration: acceptedRide.value!.duration,
-    //     status: "goingToPickUp",
-    //     driver: userModel!.copyWith(
-    //       car: userModel!.car,
-    //       current_address: AddressModel(name: name, latitude: latitude, longitude: longitude, rotation: rotation),
-    //       email: userModel!.email,
-    //       fcm_token: userModel!.fcm_token,
+    try {
+      acceptedRide.value = acceptedRide.value!.copyWith(
+          driver: userModel!.copyWith(
+              current_address: AddressModel(
+        name: 'bla bla',
+        latitude: currentLocation.value!.latitude!,
+        longitude: currentLocation.value!.longitude!,
+        rotation: markerRotation.value,
+      )));
 
-    //     ),
-    //   );
-    //   await fireStore
-    //       .collection('rides')
-    //       .doc(acceptedRide.value!.passenger.user_id)
-    //       .update(updatedRide.toJson());
-    // } catch (e) {
-    //   log("Failed to update driver's location: $e");
-    // }
+      await fireStore
+          .collection('rides')
+          .doc(acceptedRide.value!.passenger.user_id)
+          .update(acceptedRide.toJson());
+    } catch (e) {
+      log("Failed to update driver's location: $e");
+    }
   }
 }

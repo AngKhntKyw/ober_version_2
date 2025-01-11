@@ -5,8 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
+import 'package:ober_version_2/pages/passenger/process_ride/process_ride_page.dart';
 import 'package:ober_version_2/pages/passenger/ride/ride_controller.dart';
-import 'package:ober_version_2/pages/passenger/ride/ride_page.dart';
 
 class ConfrimRidePage extends StatefulWidget {
   const ConfrimRidePage({super.key});
@@ -99,6 +99,7 @@ class _ConfrimRidePageState extends State<ConfrimRidePage> {
                         polylineId: const PolylineId('route'),
                         points: rideController.polylineCoordinates,
                         color: AppPallete.black,
+                        width: 6,
                       ),
                     },
                   ),
@@ -146,7 +147,8 @@ class _ConfrimRidePageState extends State<ConfrimRidePage> {
                               ElevatedButton(
                                 onPressed: () async {
                                   await rideController.bookRide();
-                                  Get.to(() => const RidePage());
+                                  // Get.to(() => const RidePage());
+                                  Get.to(() => const ProcessRidePage());
                                 },
                                 child: const Text("Book ride"),
                               ),

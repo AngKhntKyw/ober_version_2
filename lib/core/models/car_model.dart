@@ -15,4 +15,14 @@ class CarModel with _$CarModel {
 
   factory CarModel.fromJson(Map<String, dynamic> json) =>
       _$CarModelFromJson(json);
+
+  // @override
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'name': name,
+  //     'plate_number': plate_number,
+  //     'color': color,
+  //     'available': available,
+  //   };
+  // }
 }

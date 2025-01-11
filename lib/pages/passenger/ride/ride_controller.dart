@@ -96,11 +96,4 @@ class RideController extends GetxController {
       toast(e.toString());
     }
   }
-
-  Stream<DocumentSnapshot<Map<String, dynamic>>> getRideDetail() {
-    return fireStore
-        .collection('rides')
-        .doc(fireAuth.currentUser!.uid)
-        .snapshots();
-  }
 }

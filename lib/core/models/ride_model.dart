@@ -22,19 +22,4 @@ class RideModel with _$RideModel {
 
   factory RideModel.fromJson(Map<String, dynamic> json) =>
       _$RideModelFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'passenger': passenger.toJson(),
-      'pick_up': pick_up.toJson(),
-      'destination': destination.toJson(),
-      'fare': fare,
-      'distance': distance,
-      'duration': duration,
-      'status': status,
-      'driver': driver?.toJson(),
-    };
-  }
 }

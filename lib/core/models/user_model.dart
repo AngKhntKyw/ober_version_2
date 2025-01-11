@@ -22,17 +22,17 @@ class UserModel with _$UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'user_id': user_id,
-      'name': name,
-      'email': email,
-      'fcm_token': fcm_token,
-      'role': role,
-      'profile_image': profile_image,
-      'car': car!.toJson(),
-      'current_address': current_address!.toJson(),
-    };
-  }
+  // @override
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'user_id': user_id,
+  //     'name': name,
+  //     'email': email,
+  //     'fcm_token': fcm_token,
+  //     'role': role,
+  //     'profile_image': profile_image,
+  //     'car': car!.toJson(),
+  //     'current_address': current_address!.toJson(),
+  //   };
+  // }
 }
