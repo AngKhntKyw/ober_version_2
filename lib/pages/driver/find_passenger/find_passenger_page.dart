@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
-import 'package:ober_version_2/core/models/ride_model.dart';
+import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_controller.dart';
-import 'package:ober_version_2/pages/driver/process_ride/process_ride_page.dart';
 
 class FindPassengerPage extends StatefulWidget {
   const FindPassengerPage({super.key});
@@ -14,90 +12,47 @@ class FindPassengerPage extends StatefulWidget {
 }
 
 class _FindPassengerPageState extends State<FindPassengerPage> {
-  GoogleMapController? mapController;
-  Location location = Location();
-  BitmapDescriptor myLocationMarker = BitmapDescriptor.defaultMarker;
-  LocationData? currentLocation;
-  double heading = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    initializeLocation();
-    addMyLocationMarker();
-  }
-
-  void addMyLocationMarker() {
-    BitmapDescriptor.asset(
-      ImageConfiguration.empty,
-      "assets/images/car.png",
-      height: 50,
-      width: 50,
-    ).then(
-      (value) {
-        myLocationMarker = value;
-      },
-    );
-  }
-
-  Future<void> initializeLocation() async {
-    // Get current location
-    currentLocation = await location.getLocation();
-
-    // Listen for location changes
-    location.onLocationChanged.listen((locationData) async {
-      setState(() {
-        currentLocation = locationData;
-        heading = locationData.heading ?? 0;
-      });
-      if (mapController != null && currentLocation != null) {
-        await mapController?.animateCamera(CameraUpdate.newLatLng(
-          LatLng(locationData.latitude!, locationData.longitude!),
-        ));
-        await mapController?.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(locationData.latitude!, locationData.longitude!),
-            zoom: 16,
-            bearing: heading,
-          ),
-        ));
-      }
-    });
-  }
+  final findPassengerController = Get.put(FindPassengerController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: currentLocation == null
-          ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(
-                  currentLocation!.latitude!,
-                  currentLocation!.longitude!,
+      body: Obx(() {
+        return findPassengerController.currentLocation.value == null
+            ? const LoadingIndicators()
+            : SafeArea(
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      findPassengerController.currentLocation.value!.latitude!,
+                      findPassengerController.currentLocation.value!.longitude!,
+                    ),
+                    zoom: 10,
+                  ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  onMapCreated: (controller) {
+                    findPassengerController.mapController = controller;
+                  },
+                  onCameraMove: (position) =>
+                      findPassengerController.onCameraMoved(position: position),
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId("my location marker"),
+                      position: LatLng(
+                        findPassengerController
+                            .currentLocation.value!.latitude!,
+                        findPassengerController
+                            .currentLocation.value!.longitude!,
+                      ),
+                      icon: findPassengerController.myLocationMarker.value,
+                      anchor: const Offset(0.5, 0.5),
+                      rotation: findPassengerController.heading.value,
+                    ),
+                  },
                 ),
-                zoom: 16,
-              ),
-              myLocationEnabled: true,
-              onMapCreated: (controller) {
-                mapController = controller;
-              },
-              onCameraMove: (position) {
-                setState(() {
-                  heading = position.bearing;
-                });
-              },
-              markers: {
-                Marker(
-                  markerId: const MarkerId("my location marker"),
-                  position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
-                  icon: myLocationMarker,
-                  anchor: const Offset(0.5, 0.5),
-                  rotation: heading,
-                ),
-              },
-            ),
+              );
+      }),
     );
 
     // final size = MediaQuery.sizeOf(context);
@@ -242,49 +197,49 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
   }
 }
 
-class RideCard extends StatelessWidget {
-  final RideModel ride;
-  final Size size;
-  final FindPassengerController findPassengerController;
+// class RideCard extends StatelessWidget {
+//   final RideModel ride;
+//   final Size size;
+//   final FindPassengerController findPassengerController;
 
-  const RideCard({
-    super.key,
-    required this.ride,
-    required this.size,
-    required this.findPassengerController,
-  });
+//   const RideCard({
+//     super.key,
+//     required this.ride,
+//     required this.size,
+//     required this.findPassengerController,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("${ride.fare} MMKs"),
-            Text(ride.distance),
-          ],
-        ),
-        Text(ride.duration),
-        SizedBox(height: size.height / 40),
-        const Text("Destination"),
-        Text(ride.destination.name),
-        SizedBox(height: size.height / 40),
-        const Text("Pick up"),
-        Text(ride.pick_up.name),
-        SizedBox(height: size.height / 40),
-        ElevatedButton(
-          onPressed: () {
-            findPassengerController.acceptRide(ride: ride);
-            Get.to(() => const ProcessRidePage());
-          },
-          child: const Text("Accept booking"),
-        ),
-        SizedBox(height: size.height / 40),
-        const Divider(),
-      ],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Row(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//           children: [
+//             Text("${ride.fare} MMKs"),
+//             Text(ride.distance),
+//           ],
+//         ),
+//         Text(ride.duration),
+//         SizedBox(height: size.height / 40),
+//         const Text("Destination"),
+//         Text(ride.destination.name),
+//         SizedBox(height: size.height / 40),
+//         const Text("Pick up"),
+//         Text(ride.pick_up.name),
+//         SizedBox(height: size.height / 40),
+//         ElevatedButton(
+//           onPressed: () {
+//             findPassengerController.acceptRide(ride: ride);
+//             Get.to(() => const ProcessRidePage());
+//           },
+//           child: const Text("Accept booking"),
+//         ),
+//         SizedBox(height: size.height / 40),
+//         const Divider(),
+//       ],
+//     );
+//   }
+// }
