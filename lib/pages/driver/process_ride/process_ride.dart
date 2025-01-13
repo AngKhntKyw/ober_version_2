@@ -38,7 +38,7 @@ class ProcessRideController extends GetxController {
 
   @override
   void onInit() {
-    acceptedRide.value = findPassengerController.acceptedRide.value;
+    // acceptedRide.value = findPassengerController.acceptedRide.value;
     // acceptedRideDetail();
     getCurrentLocation();
     addCustomMarker();

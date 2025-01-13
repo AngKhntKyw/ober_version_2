@@ -54,6 +54,7 @@ dependencies:
   overlay_support: ^2.1.0
   cached_network_image: ^3.4.1
   action_slider: ^0.7.0
+  google_map_marker_animation: ^0.0.1
 
 
 dev_dependencies:

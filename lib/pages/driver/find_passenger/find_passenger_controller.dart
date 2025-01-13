@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,7 +8,8 @@ import 'dart:math' as math;
 
 class FindPassengerController extends GetxController {
   Location location = Location();
-  GoogleMapController? mapController;
+  // GoogleMapController? mapController;
+  Completer<GoogleMapController> mapController = Completer();
   var myLocationMarker = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
   var currentLocation = Rx<LocationData?>(null);
   Rx<LatLng?> targetLocation = Rx<LatLng?>(null);
@@ -40,31 +42,49 @@ class FindPassengerController extends GetxController {
 
     // Listen for location changes
     location.onLocationChanged.listen((locationData) async {
-      if (currentLocation.value != null) {
-        animateCarMovement(
-          from: LatLng(currentLocation.value!.latitude!,
-              currentLocation.value!.longitude!),
-          to: LatLng(locationData.latitude!, locationData.longitude!),
-        );
-      }
+      // if (currentLocation.value != null) {
+      //   animateCarMovement(
+      //     from: LatLng(currentLocation.value!.latitude!,
+      //         currentLocation.value!.longitude!),
+      //     to: LatLng(locationData.latitude!, locationData.longitude!),
+      //   );
+      // }
 
       currentLocation.value = locationData;
 
-      if (mapController != null && currentLocation.value != null) {
-        await mapController?.animateCamera(CameraUpdate.newLatLng(
-          LatLng(locationData.latitude!, locationData.longitude!),
-        ));
+      // mapController.future.then((value) async {
+      //   if (currentLocation.value != null) {
+      //     await value.animateCamera(CameraUpdate.newLatLng(
+      //       LatLng(locationData.latitude!, locationData.longitude!),
+      //     ));
 
-        await mapController?.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(locationData.latitude!, locationData.longitude!),
-              zoom: 20,
-              bearing: locationData.heading ?? 0,
-            ),
-          ),
-        );
-      }
+      //     await value.animateCamera(
+      //       CameraUpdate.newCameraPosition(
+      //         CameraPosition(
+      //           target: LatLng(locationData.latitude!, locationData.longitude!),
+      //           zoom: 20,
+      //           bearing: locationData.heading ?? 0,
+      //         ),
+      //       ),
+      //     );
+      //   }
+      // });
+
+      // if (mapController != null && currentLocation.value != null) {
+      //   await mapController?.animateCamera(CameraUpdate.newLatLng(
+      //     LatLng(locationData.latitude!, locationData.longitude!),
+      //   ));
+
+      //   await mapController?.animateCamera(
+      //     CameraUpdate.newCameraPosition(
+      //       CameraPosition(
+      //         target: LatLng(locationData.latitude!, locationData.longitude!),
+      //         zoom: 20,
+      //         bearing: locationData.heading ?? 0,
+      //       ),
+      //     ),
+      //   );
+      // }
     });
   }
 

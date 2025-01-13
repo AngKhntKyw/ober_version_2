@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_map_marker_animation/core/ripple_marker.dart';
+import 'package:google_map_marker_animation/widgets/animarker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_controller.dart';
@@ -21,23 +26,20 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
         return findPassengerController.currentLocation.value == null
             ? const LoadingIndicators()
             : SafeArea(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                      findPassengerController.currentLocation.value!.latitude!,
-                      findPassengerController.currentLocation.value!.longitude!,
-                    ),
-                    zoom: 10,
-                  ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  onMapCreated: (controller) {
-                    findPassengerController.mapController = controller;
-                  },
-                  onCameraMove: (position) =>
-                      findPassengerController.onCameraMoved(position: position),
+                child: Animarker(
+                  mapId: findPassengerController.mapController.future
+                      .then((value) => value.mapId),
+                  curve: Curves.linearToEaseOut,
+                  angleThreshold: 0,
+                  duration: const Duration(milliseconds: 1000),
+                  runExpressAfter: 20,
+                  isActiveTrip: true,
+                  useRotation: true,
+                  shouldAnimateCamera: true,
+                  onMarkerAnimationListener: (p0) {},
                   markers: {
-                    Marker(
+                    RippleMarker(
+                      ripple: false,
                       markerId: const MarkerId("my location marker"),
                       position: LatLng(
                         findPassengerController
@@ -47,9 +49,55 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                       ),
                       icon: findPassengerController.myLocationMarker.value,
                       anchor: const Offset(0.5, 0.5),
-                      rotation: findPassengerController.heading.value,
+                      // rotation: findPassengerController.heading.value,
                     ),
                   },
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        findPassengerController
+                            .currentLocation.value!.latitude!,
+                        findPassengerController
+                            .currentLocation.value!.longitude!,
+                      ),
+                      zoom: 10,
+                    ),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    onMapCreated: (controller) {
+                      // findPassengerController.mapController = controller;
+                      findPassengerController.mapController
+                          .complete(controller);
+                    },
+                    // onCameraMove: (position) => findPassengerController
+                    //     .onCameraMoved(position: position),
+                    markers: const {
+                      // Marker(
+                      //   markerId: const MarkerId("my location marker"),
+                      //   position: LatLng(
+                      //     findPassengerController
+                      //         .currentLocation.value!.latitude!,
+                      //     findPassengerController
+                      //         .currentLocation.value!.longitude!,
+                      //   ),
+                      //   icon: findPassengerController.myLocationMarker.value,
+                      //   anchor: const Offset(0.5, 0.5),
+                      //   rotation: findPassengerController.heading.value,
+                      // ),
+                      // RippleMarker(
+                      //   markerId: const MarkerId("my location marker"),
+                      //   position: LatLng(
+                      //     findPassengerController
+                      //         .currentLocation.value!.latitude!,
+                      //     findPassengerController
+                      //         .currentLocation.value!.longitude!,
+                      //   ),
+                      //   icon: findPassengerController.myLocationMarker.value,
+                      //   anchor: const Offset(0.5, 0.5),
+                      //   rotation: findPassengerController.heading.value,
+                      // ),
+                    },
+                  ),
                 ),
               );
       }),
