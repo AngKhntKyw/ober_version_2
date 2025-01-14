@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'dart:math' as math;
 
 class FindPassengerController extends GetxController {
   Location location = Location();
@@ -14,6 +13,7 @@ class FindPassengerController extends GetxController {
   var heading = Rx<double>(0);
   var zoomLevel = Rx<double>(16);
   Timer? animationTimer;
+  var isAnimating = false.obs;
 
   @override
   void onInit() {
@@ -42,36 +42,60 @@ class FindPassengerController extends GetxController {
     // Listen for location changes
     location.onLocationChanged.listen((locationData) async {
       //
-      // animateCarMovement(
-      //   from: LatLng(currentLocation.value!.latitude!,
-      //       currentLocation.value!.longitude!),
-      //   to: LatLng(
-      //     locationData.latitude!,
-      //     locationData.longitude!,
-      //   ),
-      // );
-
-      //
-      currentLocation.value = locationData;
-
-      mapController.future.then((value) async {
-        if (currentLocation.value != null) {
-          await value.animateCamera(CameraUpdate.newLatLng(
-            LatLng(locationData.latitude!, locationData.longitude!),
-          ));
-
-          await value.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(locationData.latitude!, locationData.longitude!),
-                zoom: zoomLevel.value,
-                bearing: locationData.heading ?? 0,
-              ),
-            ),
-          );
+      location.onLocationChanged.listen((locationData) async {
+        if (!isAnimating.value) {
+          moveMarker(locationData);
         }
       });
     });
+  }
+
+  LatLng interpolatePosition(LatLng start, LatLng end, double fraction) {
+    double lat = start.latitude + (end.latitude - start.latitude) * fraction;
+    double lng = start.longitude + (end.longitude - start.longitude) * fraction;
+    return LatLng(lat, lng);
+  }
+
+  Future<void> moveMarker(LocationData locationData) async {
+    if (currentLocation.value == null) return;
+
+    isAnimating.value = true;
+
+    LatLng start = LatLng(
+      currentLocation.value!.latitude!,
+      currentLocation.value!.longitude!,
+    );
+    LatLng end = LatLng(locationData.latitude!, locationData.longitude!);
+
+    double speed = locationData.speed ?? 0; // Speed in m/s
+    int duration = (speed > 0) ? (1000 / speed).clamp(500, 2000).toInt() : 1000;
+    int animationSteps = duration ~/ 16; // 16 ms per frame (~60 FPS)
+
+    for (int i = 1; i <= animationSteps; i++) {
+      await Future.delayed(const Duration(milliseconds: 16), () {
+        double fraction = i / animationSteps;
+        LatLng interpolatedPosition = interpolatePosition(start, end, fraction);
+
+        // Update current location for smooth animation
+        currentLocation.value = LocationData.fromMap({
+          "latitude": interpolatedPosition.latitude,
+          "longitude": interpolatedPosition.longitude,
+          "heading": locationData.heading,
+          "speed": locationData.speed,
+        });
+
+        // Update camera position during animation
+        mapController.future.then((controller) {
+          controller
+              .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+        });
+      });
+    }
+
+    // After animation ends, set the final position
+    currentLocation.value = locationData;
+    heading.value = locationData.heading ?? 0; // Update heading
+    isAnimating.value = false; // Mark animation as complete
   }
 
   void onCameraMoved({required CameraPosition position}) {
@@ -81,86 +105,7 @@ class FindPassengerController extends GetxController {
       heading.value += 360;
     }
   }
-
-  void animateCarMovement({required LatLng from, required LatLng to}) {
-    const int totalSteps = 100;
-    const Duration duration = Duration(milliseconds: 1000);
-    final double stepDuration = duration.inMilliseconds / totalSteps;
-
-    // Calculate the bearing from the current position to the target position
-    final double startHeading = currentLocation.value?.heading ?? 0;
-    final double endHeading = calculateBearing(from, to);
-
-    final double stepLat = (to.latitude - from.latitude) / totalSteps;
-    final double stepLng = (to.longitude - from.longitude) / totalSteps;
-
-    final double headingStep =
-        calculateHeadingStep(startHeading, endHeading, totalSteps);
-
-    int step = 0;
-    animationTimer?.cancel();
-    animationTimer =
-        Timer.periodic(Duration(milliseconds: stepDuration.toInt()), (timer) {
-      if (step >= totalSteps) {
-        timer.cancel();
-        return;
-      }
-
-      // Interpolate position
-      final double interpolatedLat = from.latitude + (stepLat * step);
-      final double interpolatedLng = from.longitude + (stepLng * step);
-
-      // Interpolate heading
-      final double interpolatedHeading =
-          normalizeHeading(startHeading + (headingStep * step));
-
-      // Update the marker position and heading
-      currentLocation.value = LocationData.fromMap({
-        "latitude": interpolatedLat,
-        "longitude": interpolatedLng,
-        "heading": interpolatedHeading,
-      });
-
-      step++;
-    });
-  }
-
-  double calculateHeadingStep(
-      double startHeading, double endHeading, int steps) {
-    double deltaHeading = endHeading - startHeading;
-
-    // Normalize delta to the shortest rotation path
-    if (deltaHeading > 180) {
-      deltaHeading -= 360;
-    } else if (deltaHeading < -180) {
-      deltaHeading += 360;
-    }
-
-    return deltaHeading / steps;
-  }
-
-  double normalizeHeading(double heading) {
-    // Ensure heading is within 0–360°
-    return (heading + 360) % 360;
-  }
-
-  double calculateBearing(LatLng from, LatLng to) {
-    final double lat1 = from.latitude * (math.pi / 180);
-    final double lon1 = from.longitude * (math.pi / 180);
-
-    final double lat2 = to.latitude * (math.pi / 180);
-    final double lon2 = to.longitude * (math.pi / 180);
-
-    final double dLon = lon2 - lon1;
-    final double y = math.sin(dLon) * math.cos(lat2);
-    final double x = math.cos(lat1) * math.sin(lat2) -
-        math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
-
-    double bearing = math.atan2(y, x) * (180 / math.pi);
-    return normalizeHeading(bearing);
-  }
 }
-
 
 // import 'dart:async';
 // import 'package:cloud_firestore/cloud_firestore.dart';
@@ -305,9 +250,9 @@ class FindPassengerController extends GetxController {
 //       markerRotation.value =
 //           (compassHeading.value - positionBearing.value) % 360;
 
-  //       if (markerRotation.value < 0) {
-  //         markerRotation.value += 360;
-  //       }
+//       if (markerRotation.value < 0) {
+//         markerRotation.value += 360;
+//       }
 //     });
 //   }
 

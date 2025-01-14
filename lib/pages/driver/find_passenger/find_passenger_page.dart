@@ -21,6 +21,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
         return findPassengerController.currentLocation.value == null
             ? const LoadingIndicators()
             : GoogleMap(
+                tiltGesturesEnabled: true,
                 initialCameraPosition: CameraPosition(
                   target: LatLng(
                     findPassengerController.currentLocation.value!.latitude!,
@@ -28,8 +29,10 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                   ),
                   zoom: findPassengerController.zoomLevel.value,
                 ),
-                // myLocationEnabled: true,
+                zoomControlsEnabled: false,
+                compassEnabled: true,
                 myLocationButtonEnabled: false,
+                myLocationEnabled: true,
                 onMapCreated: (controller) {
                   findPassengerController.mapController.complete(controller);
                 },
