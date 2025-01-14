@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,12 +7,12 @@ import 'dart:math' as math;
 
 class FindPassengerController extends GetxController {
   Location location = Location();
-  // GoogleMapController? mapController;
   Completer<GoogleMapController> mapController = Completer();
-  var myLocationMarker = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
+  var myLocationIcon = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
   var currentLocation = Rx<LocationData?>(null);
   Rx<LatLng?> targetLocation = Rx<LatLng?>(null);
   var heading = Rx<double>(0);
+  var zoomLevel = Rx<double>(16);
   Timer? animationTimer;
 
   @override
@@ -31,7 +30,7 @@ class FindPassengerController extends GetxController {
       width: 50,
     ).then(
       (value) {
-        myLocationMarker.value = value;
+        myLocationIcon.value = value;
       },
     );
   }
@@ -42,53 +41,41 @@ class FindPassengerController extends GetxController {
 
     // Listen for location changes
     location.onLocationChanged.listen((locationData) async {
-      // if (currentLocation.value != null) {
-      //   animateCarMovement(
-      //     from: LatLng(currentLocation.value!.latitude!,
-      //         currentLocation.value!.longitude!),
-      //     to: LatLng(locationData.latitude!, locationData.longitude!),
-      //   );
-      // }
+      //
+      // animateCarMovement(
+      //   from: LatLng(currentLocation.value!.latitude!,
+      //       currentLocation.value!.longitude!),
+      //   to: LatLng(
+      //     locationData.latitude!,
+      //     locationData.longitude!,
+      //   ),
+      // );
 
+      //
       currentLocation.value = locationData;
 
-      // mapController.future.then((value) async {
-      //   if (currentLocation.value != null) {
-      //     await value.animateCamera(CameraUpdate.newLatLng(
-      //       LatLng(locationData.latitude!, locationData.longitude!),
-      //     ));
+      mapController.future.then((value) async {
+        if (currentLocation.value != null) {
+          await value.animateCamera(CameraUpdate.newLatLng(
+            LatLng(locationData.latitude!, locationData.longitude!),
+          ));
 
-      //     await value.animateCamera(
-      //       CameraUpdate.newCameraPosition(
-      //         CameraPosition(
-      //           target: LatLng(locationData.latitude!, locationData.longitude!),
-      //           zoom: 20,
-      //           bearing: locationData.heading ?? 0,
-      //         ),
-      //       ),
-      //     );
-      //   }
-      // });
-
-      // if (mapController != null && currentLocation.value != null) {
-      //   await mapController?.animateCamera(CameraUpdate.newLatLng(
-      //     LatLng(locationData.latitude!, locationData.longitude!),
-      //   ));
-
-      //   await mapController?.animateCamera(
-      //     CameraUpdate.newCameraPosition(
-      //       CameraPosition(
-      //         target: LatLng(locationData.latitude!, locationData.longitude!),
-      //         zoom: 20,
-      //         bearing: locationData.heading ?? 0,
-      //       ),
-      //     ),
-      //   );
-      // }
+          await value.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(locationData.latitude!, locationData.longitude!),
+                zoom: zoomLevel.value,
+                bearing: locationData.heading ?? 0,
+              ),
+            ),
+          );
+        }
+      });
     });
   }
 
   void onCameraMoved({required CameraPosition position}) {
+    zoomLevel.value = position.zoom;
     heading.value = (currentLocation.value!.heading! - position.bearing) % 360;
     if (heading.value < 0) {
       heading.value += 360;
@@ -96,9 +83,8 @@ class FindPassengerController extends GetxController {
   }
 
   void animateCarMovement({required LatLng from, required LatLng to}) {
-    const int totalSteps = 100; // Number of animation steps
-    const Duration duration =
-        Duration(milliseconds: 2000); // Total animation duration
+    const int totalSteps = 100;
+    const Duration duration = Duration(milliseconds: 1000);
     final double stepDuration = duration.inMilliseconds / totalSteps;
 
     // Calculate the bearing from the current position to the target position

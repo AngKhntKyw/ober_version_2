@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
+import 'package:ober_version_2/pages/driver/animated_marker/animated_marker_page.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_page.dart';
 
 class DriverHomePage extends StatefulWidget {
@@ -50,6 +51,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   label: "Find passenger",
                   onPressed: () {
                     Get.to(() => const FindPassengerPage());
+                  },
+                ),
+                ItemCard(
+                  icon: Icons.taxi_alert_rounded,
+                  label: "Animated Marker",
+                  onPressed: () {
+                    Get.to(() => const AnimatedMarkerPage());
                   },
                 ),
               ],
