@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
-import 'package:ober_version_2/pages/passenger/process_ride/process_ride_page.dart';
+import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_process_ride_page.dart';
 import 'package:ober_version_2/pages/passenger/ride/ride_controller.dart';
 
 class ConfrimRidePage extends StatefulWidget {
@@ -130,11 +130,11 @@ class _ConfrimRidePageState extends State<ConfrimRidePage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text("${rideController.fare!} MMKs"),
-                                  Text(rideController.distance!),
+                                  Text("${rideController.fare ?? 0} MMKs"),
+                                  Text(rideController.distance ?? "...."),
                                 ],
                               ),
-                              Text(rideController.duration!),
+                              Text(rideController.duration ?? '....'),
                               SizedBox(height: size.height / 40),
                               const Text("Destination"),
                               SizedBox(height: size.height / 80),
@@ -148,7 +148,8 @@ class _ConfrimRidePageState extends State<ConfrimRidePage> {
                                 onPressed: () async {
                                   await rideController.bookRide();
                                   // Get.to(() => const RidePage());
-                                  Get.to(() => const ProcessRidePage());
+                                  Get.to(
+                                      () => const PassengerProcessRidePage());
                                 },
                                 child: const Text("Book ride"),
                               ),

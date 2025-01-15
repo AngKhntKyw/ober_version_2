@@ -21,11 +21,11 @@ class RideController extends GetxController {
   String? duration;
   UserModel? passenger;
 
-  @override
-  void onInit() {
-    getUserModel();
-    super.onInit();
-  }
+  // @override
+  // void onInit() {
+  //   getUserModel();
+  //   super.onInit();
+  // }
 
   Future<void> getDestinationPolyPoints() async {
     try {
@@ -60,19 +60,19 @@ class RideController extends GetxController {
     }
   }
 
-  void getUserModel() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
-          .collection('users')
-          .doc(fireAuth.currentUser!.uid)
-          .get();
-      final user = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
-      passenger = user;
-      update();
-    } catch (e) {
-      toast(e.toString());
-    }
-  }
+  // void getUserModel() async {
+  //   try {
+  //     DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
+  //         .collection('users')
+  //         .doc(fireAuth.currentUser!.uid)
+  //         .get();
+  //     final user = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+  //     passenger = user;
+  //     update();
+  //   } catch (e) {
+  //     toast(e.toString());
+  //   }
+  // }
 
   Future<void> bookRide() async {
     try {
