@@ -28,7 +28,6 @@ class _AnimatedMarkerPageState extends State<AnimatedMarkerPage> {
                     .then((value) => value.mapId),
                 curve: Curves.linear,
                 angleThreshold: 1.5,
-                // duration: const Duration(milliseconds: 3000),
                 runExpressAfter: 5,
                 isActiveTrip: true,
                 useRotation: true,

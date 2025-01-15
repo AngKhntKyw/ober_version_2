@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
+import 'package:ober_version_2/pages/passenger/home/passenger_home_controller.dart';
 import 'package:ober_version_2/pages/passenger/ride/confirm_destination_page.dart';
 
 class PassengerHomePage extends StatefulWidget {
@@ -13,6 +14,8 @@ class PassengerHomePage extends StatefulWidget {
 }
 
 class _PassengerHomePageState extends State<PassengerHomePage> {
+  final passengerHomeController = Get.put(PassengerHomeController());
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -31,98 +34,106 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
       ),
       body: Column(
         children: [
-          Container(
-            alignment: Alignment.center,
-            width: size.width,
-            height: size.width / 3,
-            child: GridView(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4),
-              children: [
-                IconCard(
-                  icon: Icons.local_taxi,
-                  label: "Ober Taxi",
-                  onPressed: () {
-                    Get.to(() => const ConfirmDestinationPage());
-                  },
-                ),
-                IconCard(
-                  icon: Icons.local_pizza,
-                  label: "Ober Food",
-                  onPressed: () {},
-                ),
-                IconCard(
-                  icon: Icons.checkroom_outlined,
-                  label: "Ober Clothing",
-                  onPressed: () {},
-                ),
-                IconCard(
-                  icon: Icons.girl,
-                  label: "Ober prostitute",
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            width: size.width,
-            height: size.width / 3,
-            child: GridView(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
+          Expanded(
+            child: Column(
               children: [
                 Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                  width: size.width,
+                  height: size.width / 3,
+                  child: GridView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4),
                     children: [
-                      Text("Payments"),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("90"),
-                          Icon(Icons.credit_card),
-                        ],
+                      IconCard(
+                        icon: Icons.local_taxi,
+                        label: "Ober Taxi",
+                        onPressed: () {
+                          Get.to(() => const ConfirmDestinationPage());
+                        },
+                      ),
+                      IconCard(
+                        icon: Icons.local_pizza,
+                        label: "Ober Food",
+                        onPressed: () {},
+                      ),
+                      IconCard(
+                        icon: Icons.checkroom_outlined,
+                        label: "Ober Clothing",
+                        onPressed: () {},
+                      ),
+                      IconCard(
+                        icon: Icons.girl,
+                        label: "Ober prostitute",
+                        onPressed: () {},
                       ),
                     ],
                   ),
                 ),
                 Container(
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  width: size.width,
+                  height: size.width / 3,
+                  child: GridView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
                     children: [
-                      Text("User points"),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("90"),
-                          Icon(Icons.workspace_premium),
-                        ],
+                      Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.black),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("Payments"),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("90"),
+                                Icon(Icons.credit_card),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.black),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("User points"),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("90"),
+                                Icon(Icons.workspace_premium),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -130,6 +141,37 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
               ],
             ),
           ),
+
+          //
+
+          passengerHomeController.currentRide.value == null
+              ? const SizedBox()
+              : Container(
+                  alignment: Alignment.center,
+                  width: size.width,
+                  height: 80,
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppPallete.white,
+                    border: Border.all(color: AppPallete.black),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Icon(Icons.car_crash_sharp),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Current Ride"),
+                          Text(passengerHomeController.currentRide.value!.id),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
         ],
       ),
     );
