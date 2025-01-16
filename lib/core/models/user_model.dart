@@ -17,22 +17,9 @@ class UserModel with _$UserModel {
     required String profile_image,
     CarModel? car,
     AddressModel? current_address,
+    String? current_ride_id,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
-
-  // @override
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'user_id': user_id,
-  //     'name': name,
-  //     'email': email,
-  //     'fcm_token': fcm_token,
-  //     'role': role,
-  //     'profile_image': profile_image,
-  //     'car': car!.toJson(),
-  //     'current_address': current_address!.toJson(),
-  //   };
-  // }
 }

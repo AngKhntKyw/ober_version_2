@@ -8,7 +8,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
+import 'package:ober_version_2/core/models/user_model.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 class FindPassengerController extends GetxController {
@@ -33,15 +35,19 @@ class FindPassengerController extends GetxController {
   //
 
   var acceptedRide = Rx<RideModel?>(null);
-  var status = Rx<String>("booking");
   var goingToPickUpPolylines = Rx<List<LatLng>>([]);
   var goingToDestinationUpPolylines = Rx<List<LatLng>>([]);
+
+  //
+
+  var userModel = Rx<UserModel?>(null);
 
   @override
   void onInit() {
     initializeLocation();
     addMyLocationMarker();
     getRides();
+    getUserModel();
     super.onInit();
   }
 
@@ -49,6 +55,39 @@ class FindPassengerController extends GetxController {
   void onClose() {
     isActive.value = false;
     super.onClose();
+  }
+
+  void getUserModel() {
+    fireStore
+        .collection('users')
+        .doc(fireAuth.currentUser!.uid)
+        .snapshots()
+        .listen(
+      (event) {
+        if (event.exists) {
+          userModel.value = UserModel.fromJson(event.data()!);
+          getRideDetail(userModel: userModel.value!);
+        }
+      },
+    );
+  }
+
+  void getRideDetail({required UserModel userModel}) {
+    try {
+      fireStore
+          .collection('rides')
+          .doc(userModel.current_ride_id!)
+          .snapshots()
+          .listen(
+        (event) {
+          if (event.exists) {
+            acceptedRide.value = RideModel.fromJson(event.data()!);
+          }
+        },
+      );
+    } catch (e) {
+      toast(e.toString());
+    }
   }
 
   void addMyLocationMarker() {
@@ -99,6 +138,7 @@ class FindPassengerController extends GetxController {
     int animationSteps = duration ~/ 16; // 16 ms per frame (~60 FPS)
 
     for (int i = 1; i <= animationSteps; i++) {
+      if (!isActive.value) break;
       await Future.delayed(const Duration(milliseconds: 16), () {
         double fraction = i / animationSteps;
         LatLng interpolatedPosition = interpolatePosition(start, end, fraction);
@@ -113,18 +153,20 @@ class FindPassengerController extends GetxController {
 
         //
         if (isActive.value) {
-          if (status.value == "booking") {
+          if (acceptedRide.value == null) {
             filterRidesWithin1km();
           }
-          if (status.value == "goingToPickUp") {
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToPickUp") {
             getGoingToPickUpPolyPoints();
           }
-          if (status.value == "goingToDestination") {
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToDestination") {
             getGoingToDestinationPolyPoints();
           }
         }
-
         // Update camera position during animation
+
         mapController.future.then((controller) {
           if (isActive.value) {
             controller
@@ -138,9 +180,32 @@ class FindPassengerController extends GetxController {
       // After animation ends, set the final position
       currentLocation.value = locationData;
       heading.value = locationData.heading ?? 0; // Update heading
+      if (acceptedRide.value != null) {
+        updateDriverLocation(
+            address: AddressModel(
+          name: 'sooo',
+          latitude: currentLocation.value!.latitude!,
+          longitude: currentLocation.value!.longitude!,
+          rotation: currentLocation.value!.heading!,
+        ));
+      }
     }
     isAnimating.value = false;
   }
+
+  // if (isActive.value) {
+  //   if (acceptedRide.value == null) {
+  //     filterRidesWithin1km();
+  //   }
+  //   if (acceptedRide.value != null &&
+  //       acceptedRide.value?.status == "goingToPickUp") {
+  //     getGoingToPickUpPolyPoints();
+  //   }
+  //   if (acceptedRide.value != null &&
+  //       acceptedRide.value?.status == "goingToDestination") {
+  //     getGoingToDestinationPolyPoints();
+  //   }
+  // }
 
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
@@ -181,17 +246,26 @@ class FindPassengerController extends GetxController {
     }
   }
 
-  void acceptRide({required RideModel ride}) {
+  void acceptRide({required RideModel ride}) async {
     acceptedRide.value = ride;
-    status.value = "goingToPickUp";
+    acceptedRide.value = acceptedRide.value?.copyWith(status: "goingToPickUp");
+    await fireStore.collection('users').doc(fireAuth.currentUser!.uid).update({
+      "current_ride_id": ride.id,
+    });
+
+    await fireStore.collection('rides').doc(ride.id).update({
+      "driver": userModel.value!.toJson(),
+      "status": "goingToPickUp",
+    });
   }
 
   void goToDestination() {
-    status.value = "goingToDestination";
+    acceptedRide.value =
+        acceptedRide.value?.copyWith(status: "goingToDestination");
   }
 
   void dropOffPassenger() {
-    status.value = "booking";
+    acceptedRide.value = acceptedRide.value?.copyWith(status: "booking");
   }
 
   Future<void> getGoingToPickUpPolyPoints() async {
@@ -253,6 +327,26 @@ class FindPassengerController extends GetxController {
           );
         }
       }
+    } catch (e) {
+      toast(e.toString());
+    }
+  }
+
+  void updateDriverLocation({required AddressModel address}) async {
+    try {
+      acceptedRide.value = acceptedRide.value!.copyWith(
+          driver: userModel.value!.copyWith(
+              current_address: AddressModel(
+        name: address.name,
+        latitude: address.latitude,
+        longitude: address.longitude,
+        rotation: address.rotation,
+      )));
+
+      await fireStore
+          .collection('rides')
+          .doc(acceptedRide.value!.passenger.user_id)
+          .update(acceptedRide.toJson());
     } catch (e) {
       toast(e.toString());
     }

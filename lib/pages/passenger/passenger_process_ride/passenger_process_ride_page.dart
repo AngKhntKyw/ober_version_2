@@ -66,6 +66,7 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
                               null
                           ? Column(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text("name"),
                                 Text(passengerProcessRideController
@@ -75,20 +76,40 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
                                 Text(passengerProcessRideController
                                     .currentRide.value!.driver!.email),
                                 SizedBox(height: size.height / 40),
-                                const Text("latitude"),
-                                Text(passengerProcessRideController.currentRide
-                                    .value!.driver!.current_address!.latitude
-                                    .toString()),
-                                SizedBox(height: size.height / 40),
-                                const Text("longitude"),
-                                Text(passengerProcessRideController.currentRide
-                                    .value!.driver!.current_address!.longitude
-                                    .toString()),
-                                SizedBox(height: size.height / 40),
-                                const Text("rotation"),
-                                Text(passengerProcessRideController.currentRide
-                                    .value!.driver!.current_address!.rotation
-                                    .toString()),
+                                passengerProcessRideController.currentRide
+                                            .value!.driver!.current_address !=
+                                        null
+                                    ? Column(
+                                        children: [
+                                          const Text("latitude"),
+                                          Text(passengerProcessRideController
+                                              .currentRide
+                                              .value!
+                                              .driver!
+                                              .current_address!
+                                              .latitude
+                                              .toString()),
+                                          SizedBox(height: size.height / 40),
+                                          const Text("longitude"),
+                                          Text(passengerProcessRideController
+                                              .currentRide
+                                              .value!
+                                              .driver!
+                                              .current_address!
+                                              .longitude
+                                              .toString()),
+                                          SizedBox(height: size.height / 40),
+                                          const Text("rotation"),
+                                          Text(passengerProcessRideController
+                                              .currentRide
+                                              .value!
+                                              .driver!
+                                              .current_address!
+                                              .rotation
+                                              .toString()),
+                                        ],
+                                      )
+                                    : const Text("loading driver address....")
                               ],
                             )
                           : const Text("booking..."),
@@ -105,6 +126,7 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
                               null
                           ? Column(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(passengerProcessRideController
                                     .currentRide.value!.driver!.car!.name),

@@ -28,6 +28,7 @@ mixin _$UserModel {
   String get profile_image => throw _privateConstructorUsedError;
   CarModel? get car => throw _privateConstructorUsedError;
   AddressModel? get current_address => throw _privateConstructorUsedError;
+  String? get current_ride_id => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,7 +49,8 @@ abstract class $UserModelCopyWith<$Res> {
       String role,
       String profile_image,
       CarModel? car,
-      AddressModel? current_address});
+      AddressModel? current_address,
+      String? current_ride_id});
 
   $CarModelCopyWith<$Res>? get car;
   $AddressModelCopyWith<$Res>? get current_address;
@@ -75,6 +77,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? profile_image = null,
     Object? car = freezed,
     Object? current_address = freezed,
+    Object? current_ride_id = freezed,
   }) {
     return _then(_value.copyWith(
       user_id: null == user_id
@@ -109,6 +112,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.current_address
           : current_address // ignore: cast_nullable_to_non_nullable
               as AddressModel?,
+      current_ride_id: freezed == current_ride_id
+          ? _value.current_ride_id
+          : current_ride_id // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -153,7 +160,8 @@ abstract class _$$UserModelImplCopyWith<$Res>
       String role,
       String profile_image,
       CarModel? car,
-      AddressModel? current_address});
+      AddressModel? current_address,
+      String? current_ride_id});
 
   @override
   $CarModelCopyWith<$Res>? get car;
@@ -180,6 +188,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? profile_image = null,
     Object? car = freezed,
     Object? current_address = freezed,
+    Object? current_ride_id = freezed,
   }) {
     return _then(_$UserModelImpl(
       user_id: null == user_id
@@ -214,6 +223,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.current_address
           : current_address // ignore: cast_nullable_to_non_nullable
               as AddressModel?,
+      current_ride_id: freezed == current_ride_id
+          ? _value.current_ride_id
+          : current_ride_id // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -229,7 +242,8 @@ class _$UserModelImpl extends _UserModel {
       required this.role,
       required this.profile_image,
       this.car,
-      this.current_address})
+      this.current_address,
+      this.current_ride_id})
       : super._();
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -251,10 +265,12 @@ class _$UserModelImpl extends _UserModel {
   final CarModel? car;
   @override
   final AddressModel? current_address;
+  @override
+  final String? current_ride_id;
 
   @override
   String toString() {
-    return 'UserModel(user_id: $user_id, name: $name, email: $email, fcm_token: $fcm_token, role: $role, profile_image: $profile_image, car: $car, current_address: $current_address)';
+    return 'UserModel(user_id: $user_id, name: $name, email: $email, fcm_token: $fcm_token, role: $role, profile_image: $profile_image, car: $car, current_address: $current_address, current_ride_id: $current_ride_id)';
   }
 
   @override
@@ -272,13 +288,15 @@ class _$UserModelImpl extends _UserModel {
                 other.profile_image == profile_image) &&
             (identical(other.car, car) || other.car == car) &&
             (identical(other.current_address, current_address) ||
-                other.current_address == current_address));
+                other.current_address == current_address) &&
+            (identical(other.current_ride_id, current_ride_id) ||
+                other.current_ride_id == current_ride_id));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, user_id, name, email, fcm_token,
-      role, profile_image, car, current_address);
+      role, profile_image, car, current_address, current_ride_id);
 
   @JsonKey(ignore: true)
   @override
@@ -303,7 +321,8 @@ abstract class _UserModel extends UserModel {
       required final String role,
       required final String profile_image,
       final CarModel? car,
-      final AddressModel? current_address}) = _$UserModelImpl;
+      final AddressModel? current_address,
+      final String? current_ride_id}) = _$UserModelImpl;
   const _UserModel._() : super._();
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -325,6 +344,8 @@ abstract class _UserModel extends UserModel {
   CarModel? get car;
   @override
   AddressModel? get current_address;
+  @override
+  String? get current_ride_id;
   @override
   @JsonKey(ignore: true)
   _$$UserModelImplCopyWith<_$UserModelImpl> get copyWith =>

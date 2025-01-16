@@ -21,6 +21,7 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
           ? null
           : AddressModel.fromJson(
               json['current_address'] as Map<String, dynamic>),
+      current_ride_id: json['current_ride_id'] as String?,
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -33,4 +34,5 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'profile_image': instance.profile_image,
       'car': instance.car?.toJson(),
       'current_address': instance.current_address?.toJson(),
+      'current_ride_id': instance.current_ride_id,
     };

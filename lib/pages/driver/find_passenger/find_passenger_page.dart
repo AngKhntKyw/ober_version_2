@@ -64,7 +64,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // booking
-                        if (findPassengerController.status.value == "booking")
+                        if (findPassengerController.acceptedRide.value == null)
                           ...findPassengerController.ridesWithin1km.value
                               .map(
                                 (e) => Marker(
@@ -80,8 +80,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // going to pick up
-                        if (findPassengerController.status.value ==
-                            "gointToPickUp")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "gointToPickUp")
                           Marker(
                             markerId: MarkerId(
                                 findPassengerController.acceptedRide.value!.id),
@@ -96,8 +99,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // going to destination
-                        if (findPassengerController.status.value ==
-                            "goingToDestination")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "goingToDestination")
                           Marker(
                             markerId: MarkerId(
                                 findPassengerController.acceptedRide.value!.id),
@@ -113,7 +119,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                       circles: {
                         //
                         // booking
-                        if (findPassengerController.status.value == "booking")
+                        if (findPassengerController.acceptedRide.value == null)
                           ...findPassengerController.ridesWithin1km.value
                               .map(
                                 (e) => Circle(
@@ -130,8 +136,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // going to pick up
-                        if (findPassengerController.status.value ==
-                            "goingToPickUp")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "goingToPickUp")
                           Circle(
                             circleId: CircleId(
                                 findPassengerController.acceptedRide.value!.id),
@@ -148,8 +157,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // goint to destination
-                        if (findPassengerController.status.value ==
-                            "goingToDestination")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "goingToDestination")
                           Circle(
                             circleId: CircleId(
                                 findPassengerController.acceptedRide.value!.id),
@@ -167,8 +179,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                       polylines: {
                         //
                         // going to pick up
-                        if (findPassengerController.status.value ==
-                            "goingToPickUp")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "goingToPickUp")
                           Polyline(
                             polylineId: const PolylineId('going to pick up'),
                             points: findPassengerController
@@ -179,8 +194,11 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                         //
                         // going to destination
-                        if (findPassengerController.status.value ==
-                            "goingToDestination")
+                        if (findPassengerController.acceptedRide.value !=
+                                null &&
+                            findPassengerController
+                                    .acceptedRide.value!.status ==
+                                "goingToDestination")
                           Polyline(
                             polylineId:
                                 const PolylineId('going to destination'),
@@ -193,29 +211,33 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                     ),
 
                     // Status
-                    Positioned(
-                      top: 50,
-                      left: 10,
-                      right: 10,
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: size.width,
-                        height: 60,
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppPallete.white,
-                          border: Border.all(color: AppPallete.black),
-                        ),
-                        child: Text(
-                          findPassengerController.status.value,
-                        ),
-                      ),
-                    ),
+                    findPassengerController.acceptedRide.value != null
+                        ? Positioned(
+                            top: 50,
+                            left: 10,
+                            right: 10,
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: size.width,
+                              height: 80,
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppPallete.white,
+                                border: Border.all(color: AppPallete.black),
+                              ),
+                              child: Text(
+                                findPassengerController
+                                    .acceptedRide.value!.status,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(),
 
                     //
 
-                    findPassengerController.ridesWithin1km.value.isEmpty
+                    findPassengerController.acceptedRide.value == null &&
+                            findPassengerController.ridesWithin1km.value.isEmpty
                         ? const SizedBox()
                         : DraggableScrollableSheet(
                             initialChildSize: 0.2,
@@ -236,8 +258,9 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                                 ),
                                 child:
                                     // booking
-                                    findPassengerController.status.value ==
-                                            "booking"
+                                    findPassengerController
+                                                .acceptedRide.value ==
+                                            null
                                         ? BookingStateWidget(
                                             scrollController: scrollController,
                                             size: size,
@@ -247,8 +270,13 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
 
                                         // going to pick up
                                         : findPassengerController
-                                                    .status.value ==
-                                                "goingToPickUp"
+                                                        .acceptedRide.value !=
+                                                    null &&
+                                                findPassengerController
+                                                        .acceptedRide
+                                                        .value!
+                                                        .status ==
+                                                    "goingToPickUp"
                                             ? GoingToPickUpWidget(
                                                 scrollController:
                                                     scrollController,
