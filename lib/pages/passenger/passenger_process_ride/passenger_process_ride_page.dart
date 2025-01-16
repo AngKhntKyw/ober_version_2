@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_process_ride_controller.dart';
 
@@ -22,130 +23,181 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
       appBar: AppBar(),
       body: Obx(
         () {
-          return passengerProcessRideController.currentRide.value == null
+          return passengerProcessRideController.currentRide.value == null ||
+                  passengerProcessRideController.currentLocation.value == null
               ? const LoadingIndicators()
-              : Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text("RIDE"),
-                      SizedBox(height: size.height / 40),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              "${passengerProcessRideController.currentRide.value!.fare} MMKs"),
-                          Text(passengerProcessRideController
-                              .currentRide.value!.distance),
-                        ],
-                      ),
-                      Text(passengerProcessRideController
-                          .currentRide.value!.duration),
-                      SizedBox(height: size.height / 40),
-                      const Text("Destination"),
-                      Text(passengerProcessRideController
-                          .currentRide.value!.destination.name),
-                      SizedBox(height: size.height / 40),
-                      const Text("Pick up"),
-                      Text(passengerProcessRideController
-                          .currentRide.value!.pick_up.name),
-                      SizedBox(height: size.height / 40),
-                      const Divider(),
-                      SizedBox(height: size.height / 40),
-
-                      //
-                      const Text("DRIVER"),
-                      SizedBox(height: size.height / 40),
-
+              : GoogleMap(
+                  tiltGesturesEnabled: true,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
                       passengerProcessRideController
-                                  .currentRide.value!.driver !=
-                              null
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("name"),
-                                Text(passengerProcessRideController
-                                    .currentRide.value!.driver!.name),
-                                SizedBox(height: size.height / 40),
-                                const Text("email"),
-                                Text(passengerProcessRideController
-                                    .currentRide.value!.driver!.email),
-                                SizedBox(height: size.height / 40),
-                                passengerProcessRideController.currentRide
-                                            .value!.driver!.current_address !=
-                                        null
-                                    ? Column(
-                                        children: [
-                                          const Text("latitude"),
-                                          Text(passengerProcessRideController
-                                              .currentRide
-                                              .value!
-                                              .driver!
-                                              .current_address!
-                                              .latitude
-                                              .toString()),
-                                          SizedBox(height: size.height / 40),
-                                          const Text("longitude"),
-                                          Text(passengerProcessRideController
-                                              .currentRide
-                                              .value!
-                                              .driver!
-                                              .current_address!
-                                              .longitude
-                                              .toString()),
-                                          SizedBox(height: size.height / 40),
-                                          const Text("rotation"),
-                                          Text(passengerProcessRideController
-                                              .currentRide
-                                              .value!
-                                              .driver!
-                                              .current_address!
-                                              .rotation
-                                              .toString()),
-                                        ],
-                                      )
-                                    : const Text("loading driver address....")
-                              ],
-                            )
-                          : const Text("booking..."),
-                      SizedBox(height: size.height / 40),
-                      const Divider(),
-                      SizedBox(height: size.height / 40),
-
-                      //
-                      const Text("CAR"),
-                      SizedBox(height: size.height / 40),
-
+                          .currentLocation.value!.latitude!,
                       passengerProcessRideController
-                                  .currentRide.value!.driver !=
-                              null
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(passengerProcessRideController
-                                    .currentRide.value!.driver!.car!.name),
-                                Text(passengerProcessRideController.currentRide
-                                    .value!.driver!.car!.plate_number),
-                                Text(passengerProcessRideController
-                                    .currentRide.value!.driver!.car!.color),
-                              ],
-                            )
-                          : const Text("booking..."),
-                      SizedBox(height: size.height / 40),
-
-                      const Divider(),
-                      SizedBox(height: size.height / 40),
-                    ],
+                          .currentLocation.value!.longitude!,
+                    ),
+                    zoom: passengerProcessRideController.zoomLevel.value,
                   ),
+                  zoomControlsEnabled: false,
+                  compassEnabled: true,
+                  myLocationButtonEnabled: false,
+                  myLocationEnabled: true,
+                  onMapCreated: (controller) {
+                    passengerProcessRideController.mapController
+                        .complete(controller);
+                  },
+                  onCameraMove: (position) => passengerProcessRideController
+                      .onCameraMoved(position: position),
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId("my location marker"),
+                      position: LatLng(
+                        passengerProcessRideController
+                            .currentLocation.value!.latitude!,
+                        passengerProcessRideController
+                            .currentLocation.value!.longitude!,
+                      ),
+                      icon: passengerProcessRideController.myLocationIcon.value,
+                      anchor: const Offset(0.5, 0.5),
+                      rotation: passengerProcessRideController.heading.value,
+                    ),
+                  },
                 );
         },
       ),
     );
   }
 }
+
+
+//  Padding(
+//                   padding: const EdgeInsets.all(20),
+//                   child: SingleChildScrollView(
+//                     physics: const BouncingScrollPhysics(),
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         const Text("RIDE"),
+//                         SizedBox(height: size.height / 40),
+//                         Text(passengerProcessRideController
+//                             .currentRide.value!.status),
+//                         SizedBox(height: size.height / 40),
+//                         Row(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                           children: [
+//                             Text(
+//                                 "${passengerProcessRideController.currentRide.value!.fare} MMKs"),
+//                             Text(passengerProcessRideController
+//                                 .currentRide.value!.distance),
+//                           ],
+//                         ),
+//                         Text(passengerProcessRideController
+//                             .currentRide.value!.duration),
+//                         SizedBox(height: size.height / 40),
+//                         const Text("Destination"),
+//                         Text(passengerProcessRideController
+//                             .currentRide.value!.destination.name),
+//                         SizedBox(height: size.height / 40),
+//                         const Text("Pick up"),
+//                         Text(passengerProcessRideController
+//                             .currentRide.value!.pick_up.name),
+//                         SizedBox(height: size.height / 40),
+//                         const Divider(),
+//                         SizedBox(height: size.height / 40),
+
+//                         //
+//                         const Text("DRIVER"),
+//                         SizedBox(height: size.height / 40),
+
+//                         passengerProcessRideController
+//                                     .currentRide.value!.driver !=
+//                                 null
+//                             ? Column(
+//                                 mainAxisSize: MainAxisSize.min,
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 children: [
+//                                   const Text("name"),
+//                                   Text(passengerProcessRideController
+//                                       .currentRide.value!.driver!.name),
+//                                   SizedBox(height: size.height / 40),
+//                                   const Text("email"),
+//                                   Text(passengerProcessRideController
+//                                       .currentRide.value!.driver!.email),
+//                                   SizedBox(height: size.height / 40),
+//                                   passengerProcessRideController.currentRide
+//                                               .value!.driver!.current_address !=
+//                                           null
+//                                       ? Column(
+//                                           crossAxisAlignment:
+//                                               CrossAxisAlignment.start,
+//                                           children: [
+//                                             const Text("latitude"),
+//                                             Text(passengerProcessRideController
+//                                                 .currentRide
+//                                                 .value!
+//                                                 .driver!
+//                                                 .current_address!
+//                                                 .latitude
+//                                                 .toString()),
+//                                             SizedBox(height: size.height / 40),
+//                                             const Text("longitude"),
+//                                             Text(passengerProcessRideController
+//                                                 .currentRide
+//                                                 .value!
+//                                                 .driver!
+//                                                 .current_address!
+//                                                 .longitude
+//                                                 .toString()),
+//                                             SizedBox(height: size.height / 40),
+//                                             const Text("rotation"),
+//                                             Text(passengerProcessRideController
+//                                                 .currentRide
+//                                                 .value!
+//                                                 .driver!
+//                                                 .current_address!
+//                                                 .rotation
+//                                                 .toString()),
+//                                           ],
+//                                         )
+//                                       : const Text("loading driver address....")
+//                                 ],
+//                               )
+//                             : const Text("booking..."),
+//                         SizedBox(height: size.height / 40),
+//                         const Divider(),
+//                         SizedBox(height: size.height / 40),
+
+//                         //
+//                         const Text("CAR"),
+//                         SizedBox(height: size.height / 40),
+
+//                         passengerProcessRideController
+//                                     .currentRide.value!.driver !=
+//                                 null
+//                             ? Column(
+//                                 mainAxisSize: MainAxisSize.min,
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 children: [
+//                                   Text(passengerProcessRideController
+//                                       .currentRide.value!.driver!.car!.name),
+//                                   Text(passengerProcessRideController
+//                                       .currentRide
+//                                       .value!
+//                                       .driver!
+//                                       .car!
+//                                       .plate_number),
+//                                   Text(passengerProcessRideController
+//                                       .currentRide.value!.driver!.car!.color),
+//                                 ],
+//                               )
+//                             : const Text("booking..."),
+//                         SizedBox(height: size.height / 40),
+
+//                         const Divider(),
+//                         SizedBox(height: size.height / 40),
+//                       ],
+//                     ),
+//                   ),
+//                 );

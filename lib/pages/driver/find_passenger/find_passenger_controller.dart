@@ -193,20 +193,6 @@ class FindPassengerController extends GetxController {
     isAnimating.value = false;
   }
 
-  // if (isActive.value) {
-  //   if (acceptedRide.value == null) {
-  //     filterRidesWithin1km();
-  //   }
-  //   if (acceptedRide.value != null &&
-  //       acceptedRide.value?.status == "goingToPickUp") {
-  //     getGoingToPickUpPolyPoints();
-  //   }
-  //   if (acceptedRide.value != null &&
-  //       acceptedRide.value?.status == "goingToDestination") {
-  //     getGoingToDestinationPolyPoints();
-  //   }
-  // }
-
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
     heading.value = (currentLocation.value!.heading! - position.bearing) % 360;
