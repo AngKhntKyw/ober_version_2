@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:ober_version_2/pages/passenger/home/passenger_home_controller.da
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_process_ride_page.dart';
 import 'package:ober_version_2/pages/passenger/ride/confirm_destination_page.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PassengerHomePage extends StatefulWidget {
   const PassengerHomePage({super.key});
@@ -69,7 +71,19 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                             IconCard(
                               icon: Icons.local_pizza,
                               label: "Ober Food",
-                              onPressed: () {},
+                              onPressed: () async {
+                                const url =
+                                    "https://www.facebook.com/share/p/19n4q2StLt/";
+
+                                final Uri webUri = Uri.parse(url);
+
+                                if (await canLaunchUrl(webUri)) {
+                                  await launchUrl(webUri,
+                                      mode: LaunchMode.externalApplication);
+                                } else {
+                                  log("Could not launch $url");
+                                }
+                              },
                             ),
                             IconCard(
                               icon: Icons.checkroom_outlined,
