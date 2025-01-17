@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,11 +23,11 @@ class RideController extends GetxController {
   String? duration;
   UserModel? passenger;
 
-  // @override
-  // void onInit() {
-  //   getUserModel();
-  //   super.onInit();
-  // }
+  @override
+  void onInit() {
+    getUserModel();
+    super.onInit();
+  }
 
   Future<void> getDestinationPolyPoints() async {
     try {
@@ -60,19 +62,18 @@ class RideController extends GetxController {
     }
   }
 
-  // void getUserModel() async {
-  //   try {
-  //     DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
-  //         .collection('users')
-  //         .doc(fireAuth.currentUser!.uid)
-  //         .get();
-  //     final user = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
-  //     passenger = user;
-  //     update();
-  //   } catch (e) {
-  //     toast(e.toString());
-  //   }
-  // }
+  void getUserModel() async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
+          .collection('users')
+          .doc(fireAuth.currentUser!.uid)
+          .get();
+      passenger = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+      update();
+    } catch (e) {
+      toast(e.toString());
+    }
+  }
 
   Future<void> bookRide() async {
     try {

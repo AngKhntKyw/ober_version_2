@@ -15,7 +15,9 @@ class DriverHomeController extends GetxController {
   void onInit() {
     getUserInfo().then(
       (value) {
-        getRideDetail(userModel: value!);
+        if (value!.current_ride_id != null) {
+          getRideDetail(userModel: value);
+        }
       },
     );
     super.onInit();

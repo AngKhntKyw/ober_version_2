@@ -24,6 +24,8 @@ class PassengerHomeController extends GetxController {
       (event) {
         if (event.exists) {
           currentRide.value = RideModel.fromJson(event.data()!);
+        } else {
+          currentRide.value = null;
         }
       },
     );

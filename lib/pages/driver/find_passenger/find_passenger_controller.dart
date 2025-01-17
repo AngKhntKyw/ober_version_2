@@ -66,7 +66,9 @@ class FindPassengerController extends GetxController {
       (event) {
         if (event.exists) {
           userModel.value = UserModel.fromJson(event.data()!);
-          getRideDetail(userModel: userModel.value!);
+          if (userModel.value!.current_ride_id != null) {
+            getRideDetail(userModel: userModel.value!);
+          }
         }
       },
     );
@@ -167,12 +169,12 @@ class FindPassengerController extends GetxController {
         }
         // Update camera position during animation
 
-        mapController.future.then((controller) {
-          if (isActive.value) {
-            controller
-                .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
-          }
-        });
+        // mapController.future.then((controller) {
+        //   if (isActive.value) {
+        //     controller
+        //         .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+        //   }
+        // });
       });
     }
 
@@ -245,13 +247,24 @@ class FindPassengerController extends GetxController {
     });
   }
 
-  void goToDestination() {
+  void goToDestination() async {
     acceptedRide.value =
         acceptedRide.value?.copyWith(status: "goingToDestination");
+    await fireStore.collection('rides').doc(acceptedRide.value!.id).update({
+      "driver": userModel.value!.toJson(),
+      "status": "goingToDestination",
+    });
   }
 
-  void dropOffPassenger() {
+  void dropOffPassenger() async {
     acceptedRide.value = acceptedRide.value?.copyWith(status: "booking");
+
+    await fireStore.collection('rides').doc(acceptedRide.value!.id).delete();
+    await fireStore.collection('users').doc(fireAuth.currentUser!.uid).update({
+      "current_ride_id": null,
+    });
+
+    Get.back();
   }
 
   Future<void> getGoingToPickUpPolyPoints() async {

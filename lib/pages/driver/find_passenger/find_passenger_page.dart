@@ -84,7 +84,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                                 null &&
                             findPassengerController
                                     .acceptedRide.value!.status ==
-                                "gointToPickUp")
+                                "goingToPickUp")
                           Marker(
                             markerId: MarkerId(
                                 findPassengerController.acceptedRide.value!.id),
