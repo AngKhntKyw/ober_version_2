@@ -9,17 +9,13 @@ class DriverHomeController extends GetxController {
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
+  var userModel = Rx<UserModel?>(null);
   var currentRide = Rx<RideModel?>(null);
 
   @override
   void onInit() {
-    getUserInfo().then(
-      (value) {
-        if (value!.current_ride_id != null) {
-          getRideDetail(userModel: value);
-        }
-      },
-    );
+    getUserInfo();
+    if (userModel.value != null) getRideDetail(userModel: userModel.value!);
     super.onInit();
   }
 
@@ -33,6 +29,8 @@ class DriverHomeController extends GetxController {
         (event) {
           if (event.exists) {
             currentRide.value = RideModel.fromJson(event.data()!);
+          } else {
+            currentRide.value = null;
           }
         },
       );
@@ -41,17 +39,23 @@ class DriverHomeController extends GetxController {
     }
   }
 
-  Future<UserModel?> getUserInfo() async {
+  void getUserInfo() {
     try {
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await fireStore
+      fireStore
           .collection('users')
           .doc(fireAuth.currentUser!.uid)
-          .get();
-
-      return UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+          .snapshots()
+          .listen(
+        (event) {
+          if (event.exists) {
+            userModel.value = UserModel.fromJson(event.data()!);
+          } else {
+            userModel.value = null;
+          }
+        },
+      );
     } catch (e) {
       toast(e.toString());
-      return null;
     }
   }
 }

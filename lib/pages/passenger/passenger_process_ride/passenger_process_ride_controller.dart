@@ -35,6 +35,10 @@ class PassengerProcessRideController extends GetxController {
   var goingToPickUpPolylines = Rx<List<LatLng>>([]);
   var goingToDestinationUpPolylines = Rx<List<LatLng>>([]);
 
+  //
+  var driverMarkerRotation = Rx<double>(0.0);
+  var driverPositionBearing = Rx<double>(0.0);
+
   @override
   void onInit() {
     getRideDetail();
@@ -185,6 +189,18 @@ class PassengerProcessRideController extends GetxController {
 
     if (markerRotation.value < 0) {
       markerRotation.value += 360;
+    }
+  }
+
+  void onDriverCameraMoved({required CameraPosition position}) {
+    zoomLevel.value = position.zoom;
+    driverPositionBearing.value = position.bearing;
+    driverMarkerRotation.value =
+        (currentRide.value!.driver!.current_address!.rotation -
+                position.bearing) %
+            360;
+    if (driverMarkerRotation.value < 0) {
+      driverMarkerRotation.value += 360;
     }
   }
 }

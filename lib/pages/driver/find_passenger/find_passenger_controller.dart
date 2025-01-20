@@ -27,7 +27,7 @@ class FindPassengerController extends GetxController {
   var isAnimating = false.obs;
   var isActive = true.obs;
 
-  //
+  //j
 
   var allRides = Rx<List<RideModel>>([]);
   var ridesWithin1km = Rx<List<RideModel>>([]);
@@ -113,6 +113,8 @@ class FindPassengerController extends GetxController {
     location.onLocationChanged.listen((locationData) async {
       //
       if (isActive.value && !isAnimating.value) {
+        isAnimating.value = true;
+
         moveMarker(locationData);
       }
     });
@@ -126,8 +128,6 @@ class FindPassengerController extends GetxController {
 
   Future<void> moveMarker(LocationData locationData) async {
     if (currentLocation.value == null || !isActive.value) return;
-
-    isAnimating.value = true;
 
     LatLng start = LatLng(
       currentLocation.value!.latitude!,
@@ -154,6 +154,7 @@ class FindPassengerController extends GetxController {
         });
 
         //
+
         if (isActive.value) {
           if (acceptedRide.value == null) {
             filterRidesWithin1km();
@@ -167,14 +168,29 @@ class FindPassengerController extends GetxController {
             getGoingToDestinationPolyPoints();
           }
         }
-        // Update camera position during animation
 
-        // mapController.future.then((controller) {
-        //   if (isActive.value) {
-        //     controller
-        //         .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
-        //   }
-        // });
+        // Update camera position during animation
+        mapController.future.then((controller) {
+          if (isActive.value) {
+            controller
+                .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+            //
+            if (acceptedRide.value != null &&
+                    acceptedRide.value?.status == "goingToPickUp" ||
+                acceptedRide.value != null &&
+                    acceptedRide.value?.status == "goingToDestination") {
+              controller.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: interpolatedPosition,
+                    bearing: currentLocation.value!.heading!,
+                    zoom: zoomLevel.value,
+                  ),
+                ),
+              );
+            }
+          }
+        });
       });
     }
 
