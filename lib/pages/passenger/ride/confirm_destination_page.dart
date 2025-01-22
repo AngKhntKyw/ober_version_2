@@ -49,6 +49,7 @@ class _ConfirmDestinationPageState extends State<ConfirmDestinationPage> {
                     latitude: result.latLng!.latitude,
                     longitude: result.latLng!.longitude,
                     rotation: 0,
+                    speed: 0,
                   );
                   Get.to(() => const ConfirmPickUpPage());
                 },

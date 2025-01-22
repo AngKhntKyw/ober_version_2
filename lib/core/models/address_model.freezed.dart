@@ -24,6 +24,7 @@ mixin _$AddressModel {
   double get latitude => throw _privateConstructorUsedError;
   double get longitude => throw _privateConstructorUsedError;
   double get rotation => throw _privateConstructorUsedError;
+  double get speed => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -37,7 +38,12 @@ abstract class $AddressModelCopyWith<$Res> {
           AddressModel value, $Res Function(AddressModel) then) =
       _$AddressModelCopyWithImpl<$Res, AddressModel>;
   @useResult
-  $Res call({String name, double latitude, double longitude, double rotation});
+  $Res call(
+      {String name,
+      double latitude,
+      double longitude,
+      double rotation,
+      double speed});
 }
 
 /// @nodoc
@@ -57,6 +63,7 @@ class _$AddressModelCopyWithImpl<$Res, $Val extends AddressModel>
     Object? latitude = null,
     Object? longitude = null,
     Object? rotation = null,
+    Object? speed = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -75,6 +82,10 @@ class _$AddressModelCopyWithImpl<$Res, $Val extends AddressModel>
           ? _value.rotation
           : rotation // ignore: cast_nullable_to_non_nullable
               as double,
+      speed: null == speed
+          ? _value.speed
+          : speed // ignore: cast_nullable_to_non_nullable
+              as double,
     ) as $Val);
   }
 }
@@ -87,7 +98,12 @@ abstract class _$$AddressModelImplCopyWith<$Res>
       __$$AddressModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, double latitude, double longitude, double rotation});
+  $Res call(
+      {String name,
+      double latitude,
+      double longitude,
+      double rotation,
+      double speed});
 }
 
 /// @nodoc
@@ -105,6 +121,7 @@ class __$$AddressModelImplCopyWithImpl<$Res>
     Object? latitude = null,
     Object? longitude = null,
     Object? rotation = null,
+    Object? speed = null,
   }) {
     return _then(_$AddressModelImpl(
       name: null == name
@@ -123,6 +140,10 @@ class __$$AddressModelImplCopyWithImpl<$Res>
           ? _value.rotation
           : rotation // ignore: cast_nullable_to_non_nullable
               as double,
+      speed: null == speed
+          ? _value.speed
+          : speed // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -134,7 +155,8 @@ class _$AddressModelImpl extends _AddressModel {
       {required this.name,
       required this.latitude,
       required this.longitude,
-      required this.rotation})
+      required this.rotation,
+      required this.speed})
       : super._();
 
   factory _$AddressModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -148,10 +170,12 @@ class _$AddressModelImpl extends _AddressModel {
   final double longitude;
   @override
   final double rotation;
+  @override
+  final double speed;
 
   @override
   String toString() {
-    return 'AddressModel(name: $name, latitude: $latitude, longitude: $longitude, rotation: $rotation)';
+    return 'AddressModel(name: $name, latitude: $latitude, longitude: $longitude, rotation: $rotation, speed: $speed)';
   }
 
   @override
@@ -165,13 +189,14 @@ class _$AddressModelImpl extends _AddressModel {
             (identical(other.longitude, longitude) ||
                 other.longitude == longitude) &&
             (identical(other.rotation, rotation) ||
-                other.rotation == rotation));
+                other.rotation == rotation) &&
+            (identical(other.speed, speed) || other.speed == speed));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, name, latitude, longitude, rotation);
+      Object.hash(runtimeType, name, latitude, longitude, rotation, speed);
 
   @JsonKey(ignore: true)
   @override
@@ -192,7 +217,8 @@ abstract class _AddressModel extends AddressModel {
       {required final String name,
       required final double latitude,
       required final double longitude,
-      required final double rotation}) = _$AddressModelImpl;
+      required final double rotation,
+      required final double speed}) = _$AddressModelImpl;
   const _AddressModel._() : super._();
 
   factory _AddressModel.fromJson(Map<String, dynamic> json) =
@@ -206,6 +232,8 @@ abstract class _AddressModel extends AddressModel {
   double get longitude;
   @override
   double get rotation;
+  @override
+  double get speed;
   @override
   @JsonKey(ignore: true)
   _$$AddressModelImplCopyWith<_$AddressModelImpl> get copyWith =>

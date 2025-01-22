@@ -8,6 +8,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
 import 'package:ober_version_2/pages/passenger/passenger_nav_bar_page.dart';
@@ -39,10 +40,14 @@ class PassengerProcessRideController extends GetxController {
   var driverMarkerRotation = Rx<double>(0.0);
   var driverPositionBearing = Rx<double>(0.0);
 
+  //
+  var isAnimating = false.obs;
+  var isActive = true.obs;
+
   @override
   void onInit() {
-    getRideDetail();
     addMyLocationMarker();
+    getRideDetail();
     initializeLocation();
     changeCompass();
     super.onInit();
@@ -62,11 +67,106 @@ class PassengerProcessRideController extends GetxController {
               : currentRide.value!.status == "goingToDestination"
                   ? getGoingToDestinationsPolyPoints()
                   : null;
+
+          mapController.future.then((controller) {
+            if (isActive.value) {
+              controller.animateCamera(CameraUpdate.newLatLng(LatLng(
+                  currentRide.value!.driver!.current_address!.latitude,
+                  currentRide.value!.driver!.current_address!.longitude)));
+              //
+              if (currentRide.value != null &&
+                      currentRide.value?.status == "goingToPickUp" ||
+                  currentRide.value != null &&
+                      currentRide.value?.status == "goingToDestination") {
+                controller.animateCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                      target: LatLng(
+                          currentRide.value!.driver!.current_address!.latitude,
+                          currentRide
+                              .value!.driver!.current_address!.longitude),
+                      bearing:
+                          currentRide.value!.driver!.current_address!.rotation,
+                      zoom: zoomLevel.value,
+                    ),
+                  ),
+                );
+              }
+            }
+          });
+
+          moveMarker(
+            LocationData.fromMap({
+              "latitude": currentRide.value!.driver!.current_address!.latitude,
+              "longitude":
+                  currentRide.value!.driver!.current_address!.longitude,
+              "heading": currentRide.value!.driver!.current_address!.rotation,
+              "speed": currentRide.value!.driver!.current_address!.speed,
+            }),
+          );
         } else {
           Get.offAll(() => const PassengerNavBarPage());
         }
       },
     );
+  }
+
+  LatLng interpolatePosition(LatLng start, LatLng end, double fraction) {
+    double lat = start.latitude + (end.latitude - start.latitude) * fraction;
+    double lng = start.longitude + (end.longitude - start.longitude) * fraction;
+    return LatLng(lat, lng);
+  }
+
+  Future<void> moveMarker(LocationData locationData) async {
+    if (isActive.value) return;
+
+    LatLng start = LatLng(
+      currentRide.value!.driver!.current_address!.latitude,
+      currentRide.value!.driver!.current_address!.longitude,
+    );
+    LatLng end = LatLng(locationData.latitude!, locationData.longitude!);
+
+    double speed = locationData.speed ?? 0; // Speed in m/s
+    int duration = (speed > 0) ? (1000 / speed).clamp(500, 2000).toInt() : 1000;
+    int animationSteps = duration ~/ 16; // 16 ms per frame (~60 FPS)
+
+    for (int i = 1; i <= animationSteps; i++) {
+      if (!isActive.value) break;
+      await Future.delayed(const Duration(milliseconds: 100), () {
+        double fraction = i / animationSteps;
+        LatLng interpolatedPosition = interpolatePosition(start, end, fraction);
+
+        // Update current location for smooth animation
+        currentRide.value = currentRide.value!.copyWith(
+          driver: currentRide.value!.driver!.copyWith(
+            current_address: AddressModel(
+              name: currentRide.value!.driver!.current_address!.name,
+              latitude: interpolatedPosition.latitude,
+              longitude: interpolatedPosition.longitude,
+              rotation: currentRide.value!.driver!.current_address!.rotation,
+              speed: currentRide.value!.driver!.current_address!.speed,
+            ),
+          ),
+        );
+      });
+    }
+
+    if (isActive.value) {
+      // After animation ends, set the final position
+      currentRide.value = currentRide.value!.copyWith(
+        driver: currentRide.value!.driver!.copyWith(
+          current_address: AddressModel(
+            name: currentRide.value!.driver!.current_address!.name,
+            latitude: currentRide.value!.driver!.current_address!.latitude,
+            longitude: currentRide.value!.driver!.current_address!.longitude,
+            rotation: currentRide.value!.driver!.current_address!.rotation,
+            speed: currentRide.value!.driver!.current_address!.speed,
+          ),
+        ),
+      );
+    }
+
+    isAnimating.value = false;
   }
 
   Future<void> getGoingToPickUpPolyPoints() async {

@@ -254,6 +254,7 @@ class ProcessRideController extends GetxController {
         latitude: currentLocation.value!.latitude!,
         longitude: currentLocation.value!.longitude!,
         rotation: markerRotation.value,
+        speed: currentLocation.value!.speed!,
       )));
 
       await fireStore

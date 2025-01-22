@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' as gc;
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -106,18 +106,82 @@ class FindPassengerController extends GetxController {
   }
 
   Future<void> initializeLocation() async {
-    // Get current location
+    // // Get current location
+    // currentLocation.value = await location.getLocation();
+
+    // // Listen for location changes
+    // location.onLocationChanged.listen((locationData) async {
+    //   //
+    //   if (isActive.value && !isAnimating.value) {
+    //     isAnimating.value = true;
+
+    //     moveMarker(locationData);
+    //   }
+    // });
+
     currentLocation.value = await location.getLocation();
 
-    // Listen for location changes
-    location.onLocationChanged.listen((locationData) async {
-      //
-      if (isActive.value && !isAnimating.value) {
-        isAnimating.value = true;
+    gc.Geolocator.getPositionStream(
+      locationSettings: gc.AndroidSettings(
+        accuracy: gc.LocationAccuracy.best,
+        distanceFilter: 1,
+        forceLocationManager: true,
+        useMSLAltitude: true,
+        intervalDuration: const Duration(milliseconds: 100),
+      ),
+    ).listen(
+      (event) {
+        if (isActive.value && !isAnimating.value) {
+          isAnimating.value = true;
 
-        moveMarker(locationData);
-      }
-    });
+          //
+          if (acceptedRide.value == null) {
+            filterRidesWithin1km();
+          }
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToPickUp") {
+            getGoingToPickUpPolyPoints();
+          }
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToDestination") {
+            getGoingToDestinationPolyPoints();
+          }
+          // Update camera position during animation
+          mapController.future.then((controller) {
+            if (isActive.value) {
+              controller.animateCamera(CameraUpdate.newLatLng(LatLng(
+                  currentLocation.value!.latitude!,
+                  currentLocation.value!.longitude!)));
+              //
+              if (acceptedRide.value != null &&
+                      acceptedRide.value?.status == "goingToPickUp" ||
+                  acceptedRide.value != null &&
+                      acceptedRide.value?.status == "goingToDestination") {
+                controller.animateCamera(
+                  CameraUpdate.newCameraPosition(
+                    CameraPosition(
+                      target: LatLng(currentLocation.value!.latitude!,
+                          currentLocation.value!.longitude!),
+                      bearing: currentLocation.value!.heading!,
+                      zoom: zoomLevel.value,
+                    ),
+                  ),
+                );
+              }
+            }
+          });
+
+          moveMarker(
+            LocationData.fromMap({
+              "latitude": event.latitude,
+              "longitude": event.longitude,
+              "heading": event.heading,
+              "speed": event.speed,
+            }),
+          );
+        }
+      },
+    );
   }
 
   LatLng interpolatePosition(LatLng start, LatLng end, double fraction) {
@@ -141,7 +205,7 @@ class FindPassengerController extends GetxController {
 
     for (int i = 1; i <= animationSteps; i++) {
       if (!isActive.value) break;
-      await Future.delayed(const Duration(milliseconds: 16), () {
+      await Future.delayed(const Duration(milliseconds: 100), () {
         double fraction = i / animationSteps;
         LatLng interpolatedPosition = interpolatePosition(start, end, fraction);
 
@@ -155,42 +219,42 @@ class FindPassengerController extends GetxController {
 
         //
 
-        if (isActive.value) {
-          if (acceptedRide.value == null) {
-            filterRidesWithin1km();
-          }
-          if (acceptedRide.value != null &&
-              acceptedRide.value?.status == "goingToPickUp") {
-            getGoingToPickUpPolyPoints();
-          }
-          if (acceptedRide.value != null &&
-              acceptedRide.value?.status == "goingToDestination") {
-            getGoingToDestinationPolyPoints();
-          }
-        }
+        // if (isActive.value) {
+        //   if (acceptedRide.value == null) {
+        //     filterRidesWithin1km();
+        //   }
+        //   if (acceptedRide.value != null &&
+        //       acceptedRide.value?.status == "goingToPickUp") {
+        //     getGoingToPickUpPolyPoints();
+        //   }
+        //   if (acceptedRide.value != null &&
+        //       acceptedRide.value?.status == "goingToDestination") {
+        //     getGoingToDestinationPolyPoints();
+        //   }
+        // }
 
-        // Update camera position during animation
-        mapController.future.then((controller) {
-          if (isActive.value) {
-            controller
-                .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
-            //
-            if (acceptedRide.value != null &&
-                    acceptedRide.value?.status == "goingToPickUp" ||
-                acceptedRide.value != null &&
-                    acceptedRide.value?.status == "goingToDestination") {
-              controller.animateCamera(
-                CameraUpdate.newCameraPosition(
-                  CameraPosition(
-                    target: interpolatedPosition,
-                    bearing: currentLocation.value!.heading!,
-                    zoom: zoomLevel.value,
-                  ),
-                ),
-              );
-            }
-          }
-        });
+        // // Update camera position during animation
+        // mapController.future.then((controller) {
+        //   if (isActive.value) {
+        //     controller
+        //         .animateCamera(CameraUpdate.newLatLng(interpolatedPosition));
+        //     //
+        //     if (acceptedRide.value != null &&
+        //             acceptedRide.value?.status == "goingToPickUp" ||
+        //         acceptedRide.value != null &&
+        //             acceptedRide.value?.status == "goingToDestination") {
+        //       controller.animateCamera(
+        //         CameraUpdate.newCameraPosition(
+        //           CameraPosition(
+        //             target: interpolatedPosition,
+        //             bearing: currentLocation.value!.heading!,
+        //             zoom: zoomLevel.value,
+        //           ),
+        //         ),
+        //       );
+        //     }
+        //   }
+        // });
       });
     }
 
@@ -205,6 +269,7 @@ class FindPassengerController extends GetxController {
           latitude: currentLocation.value!.latitude!,
           longitude: currentLocation.value!.longitude!,
           rotation: currentLocation.value!.heading!,
+          speed: currentLocation.value!.speed!,
         ));
       }
     }
@@ -230,7 +295,7 @@ class FindPassengerController extends GetxController {
   }
 
   bool checkDistanceWithin1km(RideModel passengerPickUp) {
-    double distanceInMeters = Geolocator.distanceBetween(
+    double distanceInMeters = gc.Geolocator.distanceBetween(
       currentLocation.value!.latitude!,
       currentLocation.value!.longitude!,
       passengerPickUp.pick_up.latitude,
@@ -356,6 +421,7 @@ class FindPassengerController extends GetxController {
         latitude: address.latitude,
         longitude: address.longitude,
         rotation: address.rotation,
+        speed: address.speed,
       )));
 
       await fireStore

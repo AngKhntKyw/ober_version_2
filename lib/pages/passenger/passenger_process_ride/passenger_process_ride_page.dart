@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_map_marker_animation/core/ripple_marker.dart';
-import 'package:google_map_marker_animation/widgets/animarker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
@@ -31,26 +29,95 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
               ? const LoadingIndicators()
               : Stack(
                   children: [
-                    Animarker(
-                      mapId: passengerProcessRideController.mapController.future
-                          .then((value) => value.mapId),
-                      curve: Curves.linear,
-                      angleThreshold: 1.5,
-                      runExpressAfter: 5,
-                      isActiveTrip: true,
-                      useRotation: true,
-                      shouldAnimateCamera: true,
-                      zoom: 18,
+                    GoogleMap(
+                      tiltGesturesEnabled: true,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(
+                          passengerProcessRideController
+                              .currentLocation.value!.latitude!,
+                          passengerProcessRideController
+                              .currentLocation.value!.longitude!,
+                        ),
+                        zoom: passengerProcessRideController.zoomLevel.value,
+                      ),
+                      zoomControlsEnabled: false,
+                      compassEnabled: true,
+                      myLocationButtonEnabled: true,
+                      myLocationEnabled: false,
+                      onMapCreated: (controller) {
+                        passengerProcessRideController.mapController
+                            .complete(controller);
+                      },
+                      onCameraMove: (position) {
+                        passengerProcessRideController
+                                        .currentRide.value!.status ==
+                                    "goingToPickUp" ||
+                                passengerProcessRideController
+                                        .currentRide.value!.status ==
+                                    "goingToDestination"
+                            ? passengerProcessRideController
+                                .onDriverCameraMoved(position: position)
+                            : passengerProcessRideController.onCameraMoved(
+                                position: position);
+                      },
                       markers: {
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "booking")
+                          Marker(
+                            markerId: const MarkerId("my location marker"),
+                            position: LatLng(
+                              passengerProcessRideController
+                                  .currentLocation.value!.latitude!,
+                              passengerProcessRideController
+                                  .currentLocation.value!.longitude!,
+                            ),
+                            icon: passengerProcessRideController
+                                .myLocationIcon.value,
+                            anchor: const Offset(0.5, 0.5),
+                            rotation: passengerProcessRideController
+                                .markerRotation.value,
+                          ),
+
+                        // going to pick up
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToPickUp")
+                          Marker(
+                            markerId: MarkerId(passengerProcessRideController
+                                .currentRide.value!.pick_up.name),
+                            position: LatLng(
+                                passengerProcessRideController
+                                    .currentRide.value!.pick_up.latitude,
+                                passengerProcessRideController
+                                    .currentRide.value!.pick_up.longitude),
+                            icon: BitmapDescriptor.defaultMarker,
+                          ),
+                        // going to destination
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToDestination")
+                          Marker(
+                            markerId: MarkerId(passengerProcessRideController
+                                .currentRide.value!.destination.name),
+                            position: LatLng(
+                                passengerProcessRideController
+                                    .currentRide.value!.destination.latitude,
+                                passengerProcessRideController
+                                    .currentRide.value!.destination.longitude),
+                            icon: BitmapDescriptor.defaultMarker,
+                          ),
+
+                        //
+
                         if (passengerProcessRideController
                                     .currentRide.value!.driver !=
                                 null &&
                             passengerProcessRideController.currentRide.value!
                                     .driver!.current_address !=
                                 null)
-                          RippleMarker(
-                            ripple: false,
-                            markerId: const MarkerId("my location marker"),
+                          Marker(
+                            markerId: const MarkerId('driver location'),
                             position: LatLng(
                                 passengerProcessRideController.currentRide
                                     .value!.driver!.current_address!.latitude,
@@ -59,175 +126,73 @@ class _PassengerProcessRidePageState extends State<PassengerProcessRidePage> {
                             icon: passengerProcessRideController
                                 .driverLocationIcon.value,
                             anchor: const Offset(0.5, 0.5),
-                            rotation: passengerProcessRideController
-                                .driverMarkerRotation.value,
-                            // rotation: heading,
+                            rotation: passengerProcessRideController.currentRide
+                                .value!.driver!.current_address!.rotation,
+                          ),
+
+                        //
+                      },
+                      circles: {
+                        // going to pick up
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToPickUp")
+                          Circle(
+                            circleId: const CircleId('pick up'),
+                            center: LatLng(
+                                passengerProcessRideController
+                                    .currentRide.value!.pick_up.latitude,
+                                passengerProcessRideController
+                                    .currentRide.value!.pick_up.longitude),
+                            radius: 1000,
+                            fillColor: Colors.blue.withOpacity(0.2),
+                            strokeColor: Colors.blue,
+                            strokeWidth: 1,
+                          ),
+
+                        // going to destination
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToDestination")
+                          Circle(
+                            circleId: const CircleId('pick up'),
+                            center: LatLng(
+                                passengerProcessRideController
+                                    .currentRide.value!.destination.latitude,
+                                passengerProcessRideController
+                                    .currentRide.value!.destination.longitude),
+                            radius: 1000,
+                            fillColor: Colors.blue.withOpacity(0.2),
+                            strokeColor: Colors.blue,
+                            strokeWidth: 1,
                           ),
                       },
-                      child: GoogleMap(
-                        tiltGesturesEnabled: true,
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(
-                            passengerProcessRideController
-                                .currentLocation.value!.latitude!,
-                            passengerProcessRideController
-                                .currentLocation.value!.longitude!,
+                      polylines: {
+                        // going to pick up
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToPickUp")
+                          Polyline(
+                            polylineId: const PolylineId('going to pick up'),
+                            color: AppPallete.black,
+                            points: passengerProcessRideController
+                                .goingToPickUpPolylines.value,
+                            width: 6,
                           ),
-                          zoom: passengerProcessRideController.zoomLevel.value,
-                        ),
-                        zoomControlsEnabled: false,
-                        compassEnabled: true,
-                        myLocationButtonEnabled: true,
-                        myLocationEnabled: false,
-                        onMapCreated: (controller) {
-                          passengerProcessRideController.mapController
-                              .complete(controller);
-                        },
-                        onCameraMove: (position) {
-                          passengerProcessRideController
-                                          .currentRide.value!.status ==
-                                      "goingToPickUp" ||
-                                  passengerProcessRideController
-                                          .currentRide.value!.status ==
-                                      "goingToDestination"
-                              ? passengerProcessRideController
-                                  .onDriverCameraMoved(position: position)
-                              : passengerProcessRideController.onCameraMoved(
-                                  position: position);
-                        },
-                        markers: {
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "booking")
-                            Marker(
-                              markerId: const MarkerId("my location marker"),
-                              position: LatLng(
-                                passengerProcessRideController
-                                    .currentLocation.value!.latitude!,
-                                passengerProcessRideController
-                                    .currentLocation.value!.longitude!,
-                              ),
-                              icon: passengerProcessRideController
-                                  .myLocationIcon.value,
-                              anchor: const Offset(0.5, 0.5),
-                              rotation: passengerProcessRideController
-                                  .markerRotation.value,
-                            ),
 
-                          // going to pick up
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToPickUp")
-                            Marker(
-                              markerId: MarkerId(passengerProcessRideController
-                                  .currentRide.value!.pick_up.name),
-                              position: LatLng(
-                                  passengerProcessRideController
-                                      .currentRide.value!.pick_up.latitude,
-                                  passengerProcessRideController
-                                      .currentRide.value!.pick_up.longitude),
-                              icon: BitmapDescriptor.defaultMarker,
-                            ),
-                          // going to destination
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToDestination")
-                            Marker(
-                              markerId: MarkerId(passengerProcessRideController
-                                  .currentRide.value!.destination.name),
-                              position: LatLng(
-                                  passengerProcessRideController
-                                      .currentRide.value!.destination.latitude,
-                                  passengerProcessRideController.currentRide
-                                      .value!.destination.longitude),
-                              icon: BitmapDescriptor.defaultMarker,
-                            ),
-                          // if (passengerProcessRideController
-                          //             .currentRide.value!.driver !=
-                          //         null &&
-                          //     passengerProcessRideController.currentRide.value!
-                          //             .driver!.current_address !=
-                          //         null)
-                          // Marker(
-                          //   markerId: const MarkerId('driver locaiton'),
-                          //   position: LatLng(
-                          //       passengerProcessRideController.currentRide
-                          //           .value!.driver!.current_address!.latitude,
-                          //       passengerProcessRideController
-                          //           .currentRide
-                          //           .value!
-                          //           .driver!
-                          //           .current_address!
-                          //           .longitude),
-                          //   icon: passengerProcessRideController
-                          //       .driverLocationIcon.value,
-                          //   anchor: const Offset(0.5, 0.5),
-                          //   rotation: passengerProcessRideController
-                          //       .driverMarkerRotation.value,
-                          // ),
-                        },
-                        circles: {
-                          // going to pick up
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToPickUp")
-                            Circle(
-                              circleId: const CircleId('pick up'),
-                              center: LatLng(
-                                  passengerProcessRideController
-                                      .currentRide.value!.pick_up.latitude,
-                                  passengerProcessRideController
-                                      .currentRide.value!.pick_up.longitude),
-                              radius: 1000,
-                              fillColor: Colors.blue.withOpacity(0.2),
-                              strokeColor: Colors.blue,
-                              strokeWidth: 1,
-                            ),
-
-                          // going to destination
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToDestination")
-                            Circle(
-                              circleId: const CircleId('pick up'),
-                              center: LatLng(
-                                  passengerProcessRideController
-                                      .currentRide.value!.destination.latitude,
-                                  passengerProcessRideController.currentRide
-                                      .value!.destination.longitude),
-                              radius: 1000,
-                              fillColor: Colors.blue.withOpacity(0.2),
-                              strokeColor: Colors.blue,
-                              strokeWidth: 1,
-                            ),
-                        },
-                        polylines: {
-                          // going to pick up
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToPickUp")
-                            Polyline(
-                              polylineId: const PolylineId('going to pick up'),
-                              color: AppPallete.black,
-                              points: passengerProcessRideController
-                                  .goingToPickUpPolylines.value,
-                              width: 6,
-                            ),
-
-                          // going to destination
-                          if (passengerProcessRideController
-                                  .currentRide.value!.status ==
-                              "goingToDestination")
-                            Polyline(
-                              polylineId:
-                                  const PolylineId('going to destination'),
-                              color: AppPallete.black,
-                              points: passengerProcessRideController
-                                  .goingToDestinationUpPolylines.value,
-                              width: 6,
-                            ),
-                        },
-                      ),
+                        // going to destination
+                        if (passengerProcessRideController
+                                .currentRide.value!.status ==
+                            "goingToDestination")
+                          Polyline(
+                            polylineId:
+                                const PolylineId('going to destination'),
+                            color: AppPallete.black,
+                            points: passengerProcessRideController
+                                .goingToDestinationUpPolylines.value,
+                            width: 6,
+                          ),
+                      },
                     ),
                     Positioned(
                       top: 50,

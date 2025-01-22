@@ -12,6 +12,7 @@ _$AddressModelImpl _$$AddressModelImplFromJson(Map<String, dynamic> json) =>
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       rotation: (json['rotation'] as num).toDouble(),
+      speed: (json['speed'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$$AddressModelImplToJson(_$AddressModelImpl instance) =>
@@ -20,4 +21,5 @@ Map<String, dynamic> _$$AddressModelImplToJson(_$AddressModelImpl instance) =>
       'latitude': instance.latitude,
       'longitude': instance.longitude,
       'rotation': instance.rotation,
+      'speed': instance.speed,
     };

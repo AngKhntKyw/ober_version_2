@@ -11,6 +11,7 @@ class AddressModel with _$AddressModel {
     required double latitude,
     required double longitude,
     required double rotation,
+    required double speed,
   }) = _AddressModel;
 
   factory AddressModel.fromJson(Map<String, dynamic> json) =>

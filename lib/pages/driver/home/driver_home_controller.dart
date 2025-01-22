@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -15,28 +16,7 @@ class DriverHomeController extends GetxController {
   @override
   void onInit() {
     getUserInfo();
-    if (userModel.value != null) getRideDetail(userModel: userModel.value!);
     super.onInit();
-  }
-
-  void getRideDetail({required UserModel userModel}) {
-    try {
-      fireStore
-          .collection('rides')
-          .doc(userModel.current_ride_id!)
-          .snapshots()
-          .listen(
-        (event) {
-          if (event.exists) {
-            currentRide.value = RideModel.fromJson(event.data()!);
-          } else {
-            currentRide.value = null;
-          }
-        },
-      );
-    } catch (e) {
-      toast(e.toString());
-    }
   }
 
   void getUserInfo() {
@@ -47,8 +27,27 @@ class DriverHomeController extends GetxController {
           .snapshots()
           .listen(
         (event) {
+          log(event.data().toString());
+
           if (event.exists) {
             userModel.value = UserModel.fromJson(event.data()!);
+            try {
+              fireStore
+                  .collection('rides')
+                  .doc(userModel.value!.current_ride_id ?? "")
+                  .snapshots()
+                  .listen(
+                (event) {
+                  if (event.exists) {
+                    currentRide.value = RideModel.fromJson(event.data()!);
+                  } else {
+                    currentRide.value = null;
+                  }
+                },
+              );
+            } catch (e) {
+              toast(e.toString());
+            }
           } else {
             userModel.value = null;
           }
