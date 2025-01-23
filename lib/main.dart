@@ -2,14 +2,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:ober_version_2/auth_gate.dart';
+import 'package:ober_version_2/core/configs/notification_config.dart';
 import 'package:ober_version_2/firebase_options.dart';
 import 'package:ober_version_2/core/themes/light_theme.dart';
 import 'package:overlay_support/overlay_support.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 void main() async {
   await dotenv.load();
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
@@ -20,6 +25,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  initNoti();
+
   runApp(const MyApp());
 }
 
