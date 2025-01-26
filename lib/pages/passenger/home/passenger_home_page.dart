@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
@@ -88,7 +89,11 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                             IconCard(
                               icon: Icons.checkroom_outlined,
                               label: "Ober Clothing",
-                              onPressed: () {},
+                              onPressed: () {
+                                FirebaseMessaging.instance
+                                    .getToken()
+                                    .then((value) => log(value.toString()));
+                              },
                             ),
                             IconCard(
                               icon: Icons.girl,
