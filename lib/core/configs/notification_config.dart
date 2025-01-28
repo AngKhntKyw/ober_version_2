@@ -1,9 +1,11 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
+import 'package:ober_version_2/core/configs/bubble_config.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -20,7 +22,6 @@ void initNoti() async {
 
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-//
   if (await Permission.notification.status == PermissionStatus.denied) {
     await Permission.notification.request();
   }
@@ -34,8 +35,8 @@ void initNoti() async {
     provisional: false,
     sound: true,
   );
-//
 
+  initBubble();
   log("Setting authorization status: ${settings.authorizationStatus}");
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     // on message
@@ -50,6 +51,8 @@ void initNoti() async {
         );
       }
     });
+
+    show();
 
     // background message
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -82,6 +85,7 @@ Future<void> showNoti({
       final Directory directory = await getApplicationDocumentsDirectory();
       final File file = File('${directory.path}/notification_image.jpg');
       await file.writeAsBytes(response.bodyBytes);
+
       localImagePath = file.path;
     } catch (e) {
       log('Error downloading noti image: $e');
@@ -113,6 +117,7 @@ Future<void> showNoti({
     priority: Priority.high,
     largeIcon: FilePathAndroidBitmap(localImagePath!),
     channelShowBadge: true,
+    additionalFlags: Int32List.fromList(<int>[4]),
   );
 
   NotificationDetails notificationDetails =
@@ -125,3 +130,34 @@ Future<void> showNoti({
     notificationDetails,
   );
 }
+
+// Future<void> init() async {
+//   bubble.init(
+//     appIcon: '@mipmap/ic_launcher',
+//     fqBubbleActivity: 'com.example.bubbles_in_flutter.BubbleActivity',
+//   );
+//   await bubble.isInBubble();
+// }
+
+// void showBubble({required RemoteMessage message}) async {
+//   final bytesData = await rootBundle.load('assets/images/taxi.png');
+//   final iconBytes = bytesData.buffer.asUint8List();
+//   //
+//   bubble.show(
+//     notificationId: 0,
+//     body: message.notification!.body ?? "",
+//     contentUri: message.notification!.android!.imageUrl ?? "",
+//     channel: const NotificationChannel(
+//       id: 'chat',
+//       name: 'chat',
+//       description: 'chat',
+//     ),
+//     person: bb.Person(
+//       id: 'person id',
+//       name: 'firebase',
+//       icon: iconBytes,
+//     ),
+//     isFromUser: false,
+//     shouldMinimize: false,
+//   );
+// }
