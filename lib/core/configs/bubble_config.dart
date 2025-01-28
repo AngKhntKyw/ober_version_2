@@ -7,7 +7,7 @@ final _conversationBubblesPlugin = ConversationBubbles();
 void initBubble() async {
   _conversationBubblesPlugin.init(
     appIcon: '@mipmap/ic_launcher',
-    fqBubbleActivity: 'com.example.BubbleActivity',
+    fqBubbleActivity: 'com.example.ober_version_2.BubbleActivity',
   );
 }
 

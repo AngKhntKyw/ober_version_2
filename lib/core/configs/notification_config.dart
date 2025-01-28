@@ -44,15 +44,14 @@ void initNoti() async {
       if (message.notification != null) {
         // Extract data payload
 
-        await showNoti(
-          title: message.notification!.title ?? "",
-          body: message.notification!.body ?? "",
-          imageUrl: message.notification!.android!.imageUrl ?? "",
-        );
+        // await showNoti(
+        //   title: message.notification!.title ?? "",
+        //   body: message.notification!.body ?? "",
+        //   imageUrl: message.notification!.android!.imageUrl ?? "",
+        // );
+        show();
       }
     });
-
-    show();
 
     // background message
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
