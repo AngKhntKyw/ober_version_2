@@ -36,6 +36,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                           findPassengerController
                               .currentLocation.value!.longitude!,
                         ),
+
                         zoom: findPassengerController.zoomLevel.value,
                       ),
                       zoomControlsEnabled: false,
@@ -156,7 +157,7 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                           ),
 
                         //
-                        // goint to destination
+                        // going to destination
                         if (findPassengerController.acceptedRide.value !=
                                 null &&
                             findPassengerController

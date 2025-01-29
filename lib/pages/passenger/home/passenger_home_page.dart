@@ -97,7 +97,7 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                             ),
                             IconCard(
                               icon: Icons.girl,
-                              label: "Ober prostitute",
+                              label: "Ober Prostitude",
                               onPressed: () {},
                             ),
                           ],
@@ -263,7 +263,11 @@ class IconCard extends StatelessWidget {
               color: AppPallete.white,
             ),
           ),
-          Text(label),
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ],
       ),
     );

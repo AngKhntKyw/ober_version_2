@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:conversation_bubbles/conversation_bubbles.dart';
 import 'package:flutter/services.dart';
 
@@ -12,11 +11,12 @@ void initBubble() async {
 }
 
 Future<void> show() async {
-  log("MBJKB");
-  final bytesData = await rootBundle.load('assets/images/taxi.png');
+  final bytesData = await rootBundle.load('assets/images/wallpaper.jpg');
   final iconBytes = bytesData.buffer.asUint8List();
 
   await _conversationBubblesPlugin.show(
+    isFromUser: true,
+    appIcon: '@mipmap/ic_launcher',
     notificationId: 0,
     body: "THis is body",
     contentUri: "Content url",
@@ -30,5 +30,6 @@ Future<void> show() async {
       name: "firebase",
       icon: iconBytes,
     ),
+    shouldMinimize: false,
   );
 }
