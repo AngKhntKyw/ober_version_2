@@ -37,6 +37,7 @@ void initNoti() async {
   );
 
   initBubble();
+
   log("Setting authorization status: ${settings.authorizationStatus}");
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
     // on message
@@ -50,7 +51,11 @@ void initNoti() async {
         //   imageUrl: message.notification!.android!.imageUrl ?? "",
         // );
 
-        show();
+        await show(
+          title: message.notification!.title ?? "",
+          body: message.notification!.body ?? "",
+          imageUrl: message.notification!.android!.imageUrl ?? "",
+        );
       }
     });
 
@@ -69,7 +74,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final String body = message.data['body'] ?? "";
     final String imageUrl = message.data['imageUrl'] ?? "";
 
-    await showNoti(title: title, body: body, imageUrl: imageUrl);
+    await show(title: title, body: body, imageUrl: imageUrl);
+    // await showNoti(title: title, body: body, imageUrl: imageUrl);
   }
 }
 
@@ -130,34 +136,3 @@ Future<void> showNoti({
     notificationDetails,
   );
 }
-
-// Future<void> init() async {
-//   bubble.init(
-//     appIcon: '@mipmap/ic_launcher',
-//     fqBubbleActivity: 'com.example.bubbles_in_flutter.BubbleActivity',
-//   );
-//   await bubble.isInBubble();
-// }
-
-// void showBubble({required RemoteMessage message}) async {
-//   final bytesData = await rootBundle.load('assets/images/taxi.png');
-//   final iconBytes = bytesData.buffer.asUint8List();
-//   //
-//   bubble.show(
-//     notificationId: 0,
-//     body: message.notification!.body ?? "",
-//     contentUri: message.notification!.android!.imageUrl ?? "",
-//     channel: const NotificationChannel(
-//       id: 'chat',
-//       name: 'chat',
-//       description: 'chat',
-//     ),
-//     person: bb.Person(
-//       id: 'person id',
-//       name: 'firebase',
-//       icon: iconBytes,
-//     ),
-//     isFromUser: false,
-//     shouldMinimize: false,
-//   );
-// }
