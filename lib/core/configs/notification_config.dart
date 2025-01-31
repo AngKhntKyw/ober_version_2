@@ -45,17 +45,17 @@ void initNoti() async {
       if (message.notification != null) {
         // Extract data payload
 
-        // await showNoti(
-        //   title: message.notification!.title ?? "",
-        //   body: message.notification!.body ?? "",
-        //   imageUrl: message.notification!.android!.imageUrl ?? "",
-        // );
-
-        await show(
+        await showNoti(
           title: message.notification!.title ?? "",
           body: message.notification!.body ?? "",
           imageUrl: message.notification!.android!.imageUrl ?? "",
         );
+
+        // await show(
+        //   title: message.notification!.title ?? "",
+        //   body: message.notification!.body ?? "",
+        //   imageUrl: message.notification!.android!.imageUrl ?? "",
+        // );
       }
     });
 
@@ -74,8 +74,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final String body = message.data['body'] ?? "";
     final String imageUrl = message.data['imageUrl'] ?? "";
 
-    await show(title: title, body: body, imageUrl: imageUrl);
-    // await showNoti(title: title, body: body, imageUrl: imageUrl);
+    // await show(title: title, body: body, imageUrl: imageUrl);
+    await showNoti(title: title, body: body, imageUrl: imageUrl);
   }
 }
 
