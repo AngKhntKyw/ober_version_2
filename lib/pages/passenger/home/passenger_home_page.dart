@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
@@ -237,8 +236,20 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
   }
 
   Future<String> getAcessToken() async {
-    final serviceAccountJson =
-        await rootBundle.loadString('assets/json/service-account.json');
+    final serviceAccountJson = {
+      "type": dotenv.get('TYPE'),
+      "project_id": dotenv.get('PROJECT_ID'),
+      "private_key_id": dotenv.get('PRIVATE_KEY_ID'),
+      "private_key":
+          dotenv.get('PRIVATE_KEY').replaceAll(r'\n', '\n').replaceAll(' ', ''),
+      "client_email": dotenv.get('CLIENT_EMAIL'),
+      "client_id": dotenv.get('CLIENT_ID'),
+      "auth_uri": dotenv.get('AUTH_URL'),
+      "token_uri": dotenv.get('TOKEN_URL'),
+      "auth_provider_x509_cert_url": dotenv.get('AUTH_PROVIDER_X509_CERT_URL'),
+      "client_x509_cert_url": dotenv.get('CLIENT_PROVIDER_X509_CERT_URL'),
+      "universe_domain": dotenv.get('UNIVERSE_DOMAIN'),
+    };
 
     List<String> scopes = [
       "https://www.googleapis.com/auth/userinfo.email",
