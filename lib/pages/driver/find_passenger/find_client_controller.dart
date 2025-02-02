@@ -9,15 +9,16 @@ class FindClientController extends GetxController {
   Location location = Location();
   Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
-
-  var myLocationMaker = Rx<Marker?>(null);
+  var myLocationIcon = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
   var currentLocation = Rx<LocationData?>(null);
   var zoomLevel = Rx<double>(15);
+  var heading = Rx<double>(0);
 
   @override
-  void onInit() {
+  void onInit() async {
     log("Init find client controller");
-    getCurrentLocationOnUpdate();
+    await getCurrentLocationOnUpdate();
+    await addMyLocationMarker();
     super.onInit();
   }
 
@@ -25,25 +26,41 @@ class FindClientController extends GetxController {
   void onClose() {
     log("close find client controller");
     locationSubscription?.cancel();
-
     super.onClose();
   }
 
-  void getCurrentLocationOnUpdate() async {
+  Stream<LocationData> throttleLocationUpdates(
+      Stream<LocationData> stream, Duration duration) {
+    return stream.transform(
+      StreamTransformer.fromHandlers(
+        handleData: (data, sink) {
+          sink.add(data);
+          Future.delayed(duration);
+        },
+      ),
+    );
+  }
+
+  Future<void> getCurrentLocationOnUpdate() async {
     try {
       currentLocation.value = await location.getLocation();
+      log("dsaf");
+      await updateUI();
 
-      locationSubscription =
-          location.onLocationChanged.listen((LocationData locationData) {
+      locationSubscription = throttleLocationUpdates(
+              location.onLocationChanged, const Duration(seconds: 2))
+          .listen((LocationData locationData) async {
         log("Location update: $locationData");
+        await updateUI();
         currentLocation.value = locationData;
+        heading.value = locationData.heading!;
       });
     } catch (e) {
       log("Error getting location update: $e");
     }
   }
 
-  void addMarker() {
+  Future<void> addMyLocationMarker() async {
     BitmapDescriptor.asset(
       ImageConfiguration.empty,
       "assets/images/car.png",
@@ -51,41 +68,30 @@ class FindClientController extends GetxController {
       width: 50,
     ).then(
       (value) {
-        myLocationMaker.value = Marker(
-          markerId: const MarkerId("my_location"),
-          position: LatLng(
-            currentLocation.value!.latitude!,
-            currentLocation.value!.longitude!,
-          ),
-          icon: value,
-          anchor: const Offset(0.5, 0.5),
-          rotation: currentLocation.value!.heading ?? 0,
-        );
+        myLocationIcon.value = value;
       },
     );
   }
 
-  void updateUI() {
-    mapController.future.then(
-      (value) {
-        value.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(currentLocation.value!.latitude!,
-                  currentLocation.value!.longitude!),
-              zoom: zoomLevel.value,
-            ),
-          ),
-        );
-      },
+  Future<void> updateUI() async {
+    if (currentLocation.value == null) return;
+
+    final GoogleMapController controller = await mapController.future;
+    controller.animateCamera(
+      CameraUpdate.newLatLng(
+        LatLng(
+          currentLocation.value!.latitude!,
+          currentLocation.value!.longitude!,
+        ),
+      ),
     );
   }
 
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
-    // heading.value = (currentLocation.value!.heading! - position.bearing) % 360;
-    // if (heading.value < 0) {
-    //   heading.value += 360;
-    // }
+    heading.value = (currentLocation.value!.heading! - position.bearing) % 360;
+    if (heading.value < 0) {
+      heading.value += 360;
+    }
   }
 }
