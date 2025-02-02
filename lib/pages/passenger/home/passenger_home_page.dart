@@ -236,7 +236,6 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
   }
 
   Future<String> getAcessToken() async {
-    log("Getting access token...");
     final serviceAccountJson = {
       "type": dotenv.get('TYPE'),
       "project_id": dotenv.get('PROJECT_ID'),
@@ -283,7 +282,7 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
     final Map<String, dynamic> message = {
       'message': {
         'token':
-            "fl3O5CzxREqs3Y-4h3Q7QL:APA91bEty8LXhTg-brzEZn2ubsmh7okGapMC4xmvACp-TE1dq5p4WrjIwDL0i-1zI6rKiJ9TEYbtrqXIp3Q77H-uMp96tKcf6_1cK_4QzqZtYZMnTvorpww",
+            "fvK1nxhQSya0OjnwwSIVo7:APA91bF1apgPT_yxwzcHUMgw31F9okQjOzUtH2vXyQ1IeJL7x_vlQZhmzQDxURkas8Z42gjBzpuAnnu51JzFsQrDtO4yWpwO8vhu_TQY8OwORN07oLputjw",
         'notification': {
           'title': 'Hello from Flutter!',
           'body': 'This is a test message sent via FCM.',

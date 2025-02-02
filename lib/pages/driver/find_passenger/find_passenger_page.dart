@@ -36,7 +36,6 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                           findPassengerController
                               .currentLocation.value!.longitude!,
                         ),
-
                         zoom: findPassengerController.zoomLevel.value,
                       ),
                       zoomControlsEnabled: false,
@@ -60,7 +59,8 @@ class _FindPassengerPageState extends State<FindPassengerPage> {
                           ),
                           icon: findPassengerController.myLocationIcon.value,
                           anchor: const Offset(0.5, 0.5),
-                          rotation: findPassengerController.heading.value,
+                          rotation: findPassengerController
+                              .currentLocation.value!.heading!,
                         ),
 
                         //

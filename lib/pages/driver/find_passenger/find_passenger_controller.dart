@@ -107,81 +107,89 @@ class FindPassengerController extends GetxController {
 
   Future<void> initializeLocation() async {
     // // Get current location
-    // currentLocation.value = await location.getLocation();
-
-    // // Listen for location changes
-    // location.onLocationChanged.listen((locationData) async {
-    //   //
-    //   if (isActive.value && !isAnimating.value) {
-    //     isAnimating.value = true;
-
-    //     moveMarker(locationData);
-    //   }
-    // });
-
     currentLocation.value = await location.getLocation();
 
-    gc.Geolocator.getPositionStream(
-      locationSettings: gc.AndroidSettings(
-        accuracy: gc.LocationAccuracy.best,
-        distanceFilter: 1,
-        forceLocationManager: true,
-        useMSLAltitude: true,
-        intervalDuration: const Duration(milliseconds: 100),
-      ),
-    ).listen(
-      (event) {
-        if (isActive.value && !isAnimating.value) {
-          isAnimating.value = true;
+    // Listen for location changes
+    location.onLocationChanged.listen((locationData) async {
+      //
+      if (isActive.value && !isAnimating.value) {
+        isAnimating.value = true;
 
-          //
-          if (acceptedRide.value == null) {
-            filterRidesWithin1km();
+        moveMarker(locationData);
+        mapController.future.then((controller) {
+          if (isActive.value) {
+            controller.animateCamera(CameraUpdate.newLatLng(LatLng(
+                currentLocation.value!.latitude!,
+                currentLocation.value!.longitude!)));
+            //
           }
-          if (acceptedRide.value != null &&
-              acceptedRide.value?.status == "goingToPickUp") {
-            getGoingToPickUpPolyPoints();
-          }
-          if (acceptedRide.value != null &&
-              acceptedRide.value?.status == "goingToDestination") {
-            getGoingToDestinationPolyPoints();
-          }
-          // Update camera position during animation
-          mapController.future.then((controller) {
-            if (isActive.value) {
-              controller.animateCamera(CameraUpdate.newLatLng(LatLng(
-                  currentLocation.value!.latitude!,
-                  currentLocation.value!.longitude!)));
-              //
-              if (acceptedRide.value != null &&
-                      acceptedRide.value?.status == "goingToPickUp" ||
-                  acceptedRide.value != null &&
-                      acceptedRide.value?.status == "goingToDestination") {
-                controller.animateCamera(
-                  CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: LatLng(currentLocation.value!.latitude!,
-                          currentLocation.value!.longitude!),
-                      bearing: currentLocation.value!.heading!,
-                      zoom: zoomLevel.value,
-                    ),
-                  ),
-                );
-              }
-            }
-          });
+        });
+      }
+    });
 
-          moveMarker(
-            LocationData.fromMap({
-              "latitude": event.latitude,
-              "longitude": event.longitude,
-              "heading": event.heading,
-              "speed": event.speed,
-            }),
-          );
-        }
-      },
-    );
+    // currentLocation.value = await location.getLocation();
+
+    // gc.Geolocator.getPositionStream(
+    //   locationSettings: gc.AndroidSettings(
+    //     accuracy: gc.LocationAccuracy.best,
+    //     distanceFilter: 1,
+    //     forceLocationManager: true,
+    //     useMSLAltitude: false,
+    //     intervalDuration: const Duration(milliseconds: 100),
+    //   ),
+    // ).listen(
+    //   (event) {
+    //     if (isActive.value && !isAnimating.value) {
+    //       isAnimating.value = true;
+
+    //       //
+    //       if (acceptedRide.value == null) {
+    //         filterRidesWithin1km();
+    //       }
+    //       if (acceptedRide.value != null &&
+    //           acceptedRide.value?.status == "goingToPickUp") {
+    //         getGoingToPickUpPolyPoints();
+    //       }
+    //       if (acceptedRide.value != null &&
+    //           acceptedRide.value?.status == "goingToDestination") {
+    //         getGoingToDestinationPolyPoints();
+    //       }
+    //       // Update camera position during animation
+    //       mapController.future.then((controller) {
+    //         if (isActive.value) {
+    //           controller.animateCamera(CameraUpdate.newLatLng(LatLng(
+    //               currentLocation.value!.latitude!,
+    //               currentLocation.value!.longitude!)));
+    //           //
+    //           if (acceptedRide.value != null &&
+    //                   acceptedRide.value?.status == "goingToPickUp" ||
+    //               acceptedRide.value != null &&
+    //                   acceptedRide.value?.status == "goingToDestination") {
+    //             controller.animateCamera(
+    //               CameraUpdate.newCameraPosition(
+    //                 CameraPosition(
+    //                   target: LatLng(currentLocation.value!.latitude!,
+    //                       currentLocation.value!.longitude!),
+    //                   bearing: currentLocation.value!.heading!,
+    //                   zoom: zoomLevel.value,
+    //                 ),
+    //               ),
+    //             );
+    //           }
+    //         }
+    //       });
+
+    //       moveMarker(
+    //         LocationData.fromMap({
+    //           "latitude": event.latitude,
+    //           "longitude": event.longitude,
+    //           "heading": event.heading,
+    //           "speed": event.speed,
+    //         }),
+    //       );
+    //     }
+    //   },
+    // );
   }
 
   LatLng interpolatePosition(LatLng start, LatLng end, double fraction) {
@@ -192,6 +200,8 @@ class FindPassengerController extends GetxController {
 
   Future<void> moveMarker(LocationData locationData) async {
     if (currentLocation.value == null || !isActive.value) return;
+
+    heading.value = locationData.heading ?? 0; // Update heading
 
     LatLng start = LatLng(
       currentLocation.value!.latitude!,
