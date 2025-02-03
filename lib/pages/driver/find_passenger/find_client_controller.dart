@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -28,7 +30,7 @@ class FindClientController extends GetxController
     log("Init find client controller");
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1000),
     );
     await getCurrentLocationOnUpdate();
     await addMyLocationMarker();
@@ -43,25 +45,24 @@ class FindClientController extends GetxController
     super.onClose();
   }
 
-  void animateMarker(LatLng newPosition) {
-    if (animatedPosition.value == null) {
-      animatedPosition.value = newPosition;
-      return;
+  Future<void> animateMarker(LatLng newPosition) async {
+    if (animatedPosition.value == null ||
+        (animatedPosition.value!.latitude != newPosition.latitude &&
+            animatedPosition.value!.longitude != newPosition.longitude)) {
+      _positionAnimation = LatLngTween(
+        begin: animatedPosition.value ?? newPosition,
+        end: newPosition,
+      ).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Curves.linear,
+        ),
+      )..addListener(() {
+          animatedPosition.value = _positionAnimation.value;
+        });
+
+      _animationController.forward(from: 0.0);
     }
-
-    _positionAnimation = LatLngTween(
-      begin: animatedPosition.value!,
-      end: newPosition,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.linear,
-      ),
-    )..addListener(() {
-        animatedPosition.value = _positionAnimation.value;
-      });
-
-    _animationController.forward(from: 0.0);
   }
 
   Stream<LocationData> throttleLocationUpdates(
@@ -84,14 +85,15 @@ class FindClientController extends GetxController
       locationSubscription = throttleLocationUpdates(
               location.onLocationChanged, const Duration(seconds: 2))
           .listen((LocationData locationData) async {
-        final newPosition = LatLng(
-          locationData.latitude!,
-          locationData.longitude!,
-        );
+        // final newPosition = LatLng(
+        //   locationData.latitude!,
+        //   locationData.longitude!,
+        // );
 
-        animateMarker(newPosition);
-        updateUI();
+        // await animateMarker(newPosition);
         currentLocation.value = locationData;
+
+        await updateUI();
       });
     } catch (e) {
       log("Error getting location update: $e");
@@ -99,16 +101,11 @@ class FindClientController extends GetxController
   }
 
   Future<void> addMyLocationMarker() async {
-    BitmapDescriptor.asset(
-      ImageConfiguration.empty,
-      "assets/images/car.png",
-      height: 50,
-      width: 50,
-    ).then(
-      (value) {
-        myLocationIcon.value = value;
-      },
-    );
+    final ByteData byteData = await rootBundle.load("assets/images/car.png");
+    final Uint8List bytes = byteData.buffer.asUint8List();
+    final BitmapDescriptor icon =
+        BitmapDescriptor.bytes(bytes, width: 50, height: 50);
+    myLocationIcon.value = icon;
   }
 
   Future<void> updateUI() async {

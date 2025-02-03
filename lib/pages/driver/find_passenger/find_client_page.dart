@@ -42,21 +42,19 @@ class _FindClientPageState extends State<FindClientPage> {
                   },
                   markers: {
                     Marker(
-                      markerId: const MarkerId("my location marker"),
+                      markerId: const MarkerId("my_location_marker"),
                       position:
-                          findClientController.animatedPosition.value == null
-                              ? LatLng(
-                                  findClientController
-                                      .currentLocation.value!.latitude!,
-                                  findClientController
-                                      .currentLocation.value!.longitude!,
-                                )
-                              : LatLng(
-                                  findClientController
-                                      .animatedPosition.value!.latitude,
-                                  findClientController
-                                      .animatedPosition.value!.longitude,
-                                ),
+                          // findClientController.animatedPosition.value == null
+                          //     ?
+                          LatLng(
+                        findClientController.currentLocation.value!.latitude!,
+                        findClientController.currentLocation.value!.longitude!,
+                      ),
+                      //         :
+                      //     LatLng(
+                      //   findClientController.animatedPosition.value!.latitude,
+                      //   findClientController.animatedPosition.value!.longitude,
+                      // ),
                       icon: findClientController.myLocationIcon.value,
                       anchor: const Offset(0.5, 0.5),
                       rotation: findClientController.heading.value,
