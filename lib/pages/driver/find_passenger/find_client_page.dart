@@ -18,61 +18,52 @@ class _FindClientPageState extends State<FindClientPage> {
   @override
   Widget build(BuildContext context) {
     log("rebuild");
-    return SafeArea(
-      child: Scaffold(
-        body: Obx(
-          () {
-            return findClientController.currentLocation.value == null
-                ? const LoadingIndicators()
-                : Column(
-                    children: [
-                      Center(
-                        child: Text(
-                          findClientController.currentLocation.value!
-                              .toString(),
-                        ),
-                      ),
-                      Expanded(
-                        child: GoogleMap(
-                          compassEnabled: false,
-                          zoomControlsEnabled: false,
-                          initialCameraPosition: CameraPosition(
-                            target: LatLng(
-                              findClientController
-                                  .currentLocation.value!.latitude!,
-                              findClientController
-                                  .currentLocation.value!.longitude!,
-                            ),
-                            zoom: 15,
-                          ),
-                          onMapCreated: (GoogleMapController controller) {
-                            findClientController.mapController
-                                .complete(controller);
-                          },
-                          onCameraMove: (position) {
-                            findClientController.onCameraMoved(
-                                position: position);
-                          },
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId("my location marker"),
-                              position: LatLng(
-                                findClientController
-                                    .currentLocation.value!.latitude!,
-                                findClientController
-                                    .currentLocation.value!.longitude!,
-                              ),
-                              icon: findClientController.myLocationIcon.value,
-                              anchor: const Offset(0.5, 0.5),
-                              rotation: findClientController.heading.value,
-                            ),
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-          },
-        ),
+    return Scaffold(
+      body: Obx(
+        () {
+          return findClientController.currentLocation.value == null
+              ? const LoadingIndicators()
+              : GoogleMap(
+                  myLocationEnabled: true,
+                  compassEnabled: false,
+                  zoomControlsEnabled: false,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      findClientController.currentLocation.value!.latitude!,
+                      findClientController.currentLocation.value!.longitude!,
+                    ),
+                    zoom: 15,
+                  ),
+                  onMapCreated: (GoogleMapController controller) {
+                    findClientController.mapController.complete(controller);
+                  },
+                  onCameraMove: (position) {
+                    findClientController.onCameraMoved(position: position);
+                  },
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId("my location marker"),
+                      position:
+                          findClientController.animatedPosition.value == null
+                              ? LatLng(
+                                  findClientController
+                                      .currentLocation.value!.latitude!,
+                                  findClientController
+                                      .currentLocation.value!.longitude!,
+                                )
+                              : LatLng(
+                                  findClientController
+                                      .animatedPosition.value!.latitude,
+                                  findClientController
+                                      .animatedPosition.value!.longitude,
+                                ),
+                      icon: findClientController.myLocationIcon.value,
+                      anchor: const Offset(0.5, 0.5),
+                      rotation: findClientController.heading.value,
+                    ),
+                  },
+                );
+        },
       ),
     );
   }
