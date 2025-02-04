@@ -9,13 +9,73 @@ class FindFoodController extends GetxController {
   Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
   var currentLocation = Rx<LocationData?>(null);
-  var zoomLevel = Rx<double>(15);
+  var zoomLevel = Rx<double>(16);
+  var zooming = Rx<bool>(false);
 
-  // @override
-  // void onInit() async {
-  //   await getCurrentLocationOnUpdate();
-  //   super.onInit();
-  // }
+  var mapStyle = Rx<String>('''
+  [
+    {
+      "featureType": "all",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "on"
+        }
+      ]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "landscape",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    }
+  ]
+  ''');
+
+  @override
+  void onInit() {
+    getInitialLocation();
+    super.onInit();
+  }
 
   @override
   void onClose() {
@@ -23,29 +83,16 @@ class FindFoodController extends GetxController {
     super.onClose();
   }
 
-  Stream<LocationData> throttleLocationUpdates(
-      Stream<LocationData> stream, Duration duration) {
-    return stream.transform(
-      StreamTransformer.fromHandlers(
-        handleData: (data, sink) {
-          sink.add(data);
-          Future.delayed(duration);
-        },
-      ),
-    );
+  void getInitialLocation() async {
+    currentLocation.value = await location.getLocation();
   }
 
   Future<void> getCurrentLocationOnUpdate() async {
     try {
-      currentLocation.value = await location.getLocation();
-
-      locationSubscription = throttleLocationUpdates(
-              location.onLocationChanged, const Duration(seconds: 2))
-          .listen((LocationData locationData) async {
-        //
-
+      locationSubscription =
+          location.onLocationChanged.listen((LocationData locationData) {
         currentLocation.value = locationData;
-        await updateUI();
+        updateUI();
       });
     } catch (e) {
       log("Error getting location update: $e");
@@ -55,8 +102,8 @@ class FindFoodController extends GetxController {
   Future<void> updateUI() async {
     try {
       mapController.future.then(
-        (value) async {
-          await value.animateCamera(
+        (value) {
+          value.animateCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(
                 target: LatLng(
@@ -73,5 +120,9 @@ class FindFoodController extends GetxController {
     } catch (e) {
       log("Error updating UI: $e");
     }
+  }
+
+  void onCameraMoved({required CameraPosition position}) {
+    zoomLevel.value = position.zoom;
   }
 }
