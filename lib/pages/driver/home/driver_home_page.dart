@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_client_page.dart';
+import 'package:ober_version_2/pages/driver/find_passenger/find_food_page.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_passenger_page.dart';
 import 'package:ober_version_2/pages/driver/home/driver_home_controller.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -45,7 +46,7 @@ class _DriverHomePageState extends State<DriverHomePage> {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       width: size.width,
-                      height: size.width / 3,
+                      height: size.width / 2,
                       child: GridView(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -71,6 +72,13 @@ class _DriverHomePageState extends State<DriverHomePage> {
                             label: "Find Client",
                             onPressed: () {
                               Get.to(() => const FindClientPage());
+                            },
+                          ),
+                          ItemCard(
+                            icon: Icons.fastfood,
+                            label: "Find Food",
+                            onPressed: () {
+                              Get.to(() => const FindFoodPage());
                             },
                           ),
                         ],

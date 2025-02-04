@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -23,15 +22,12 @@ class FindClientController extends GetxController
   late Animation<LatLng> _positionAnimation;
   var animatedPosition = Rx<LatLng?>(null);
   var isAnimating = false.obs;
-  var isActive = true.obs;
 
   @override
   void onInit() async {
     log("Init find client controller");
     _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
+        vsync: this, duration: const Duration(milliseconds: 1000));
     await getCurrentLocationOnUpdate();
     await addMyLocationMarker();
     super.onInit();
@@ -85,15 +81,18 @@ class FindClientController extends GetxController
       locationSubscription = throttleLocationUpdates(
               location.onLocationChanged, const Duration(seconds: 2))
           .listen((LocationData locationData) async {
-        // final newPosition = LatLng(
-        //   locationData.latitude!,
-        //   locationData.longitude!,
-        // );
+        //
+        if (isAnimating.value) return;
+        final newPosition = LatLng(
+          locationData.latitude!,
+          locationData.longitude!,
+        );
 
-        // await animateMarker(newPosition);
-        currentLocation.value = locationData;
-
+        isAnimating.value = true;
         await updateUI();
+        await animateMarker(newPosition);
+        currentLocation.value = locationData;
+        isAnimating.value = false;
       });
     } catch (e) {
       log("Error getting location update: $e");
@@ -109,22 +108,29 @@ class FindClientController extends GetxController
   }
 
   Future<void> updateUI() async {
-    if (currentLocation.value == null) return;
+    if (animatedPosition.value == null) return;
 
-    final GoogleMapController controller = await mapController.future;
-
-    controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(
-            currentLocation.value!.latitude!,
-            currentLocation.value!.longitude!,
+    mapController.future.then(
+      (value) {
+        value.animateCamera(CameraUpdate.newLatLng(
+          LatLng(
+            animatedPosition.value!.latitude,
+            animatedPosition.value!.longitude,
           ),
-          bearing: currentLocation.value!.heading ?? 0,
-          zoom: zoomLevel.value,
-        ),
-      ),
+        ));
+      },
     );
+
+    // CameraUpdate.newCameraPosition(
+    //   CameraPosition(
+    //     target: LatLng(
+    //       currentLocation.value!.latitude!,
+    //       currentLocation.value!.longitude!,
+    //     ),
+    //     bearing: currentLocation.value!.heading ?? 0,s
+    //     zoom: zoomLevel.value,
+    //   ),
+    // ),
   }
 
   double calculateRotation(double heading) {
@@ -136,7 +142,6 @@ class FindClientController extends GetxController
   }
 
   void onCameraMoved({required CameraPosition position}) {
-    log(position.bearing.toString());
     zoomLevel.value = position.zoom;
     positionBearing.value = position.bearing;
     heading.value = calculateRotation(currentLocation.value!.heading!);
