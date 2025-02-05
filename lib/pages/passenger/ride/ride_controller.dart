@@ -1,30 +1,48 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 class RideController extends GetxController {
+  // firebase
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
 
-  AddressModel? destination;
-  AddressModel? pickUp;
-  List<LatLng> polylineCoordinates = [];
-  int? fare;
-  String? distance;
-  String? duration;
+  // google map
+  Location location = Location();
+  Completer<GoogleMapController> mapController = Completer();
+  StreamSubscription<LocationData>? locationSubscription;
+  var currentLocation = Rx<LocationData?>(null);
+
+  // ride
+  var destination = Rx<AddressModel?>(null);
+  var pickUp = Rx<AddressModel?>(null);
+  var polylineCoordinates = Rx<List<LatLng>>([]);
+  var fare = Rx<int?>(null);
+  var distance = Rx<String?>(null);
+  var duration = Rx<String?>(null);
+
+  // passenger
   UserModel? passenger;
 
   @override
   void onInit() {
     getUserModel();
+    getInitialLocation();
     super.onInit();
+  }
+
+  void getInitialLocation() async {
+    currentLocation.value = await location.getLocation();
   }
 
   Future<void> getDestinationPolyPoints() async {
@@ -33,9 +51,9 @@ class RideController extends GetxController {
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
         request: PolylineRequest(
-          origin: PointLatLng(pickUp!.latitude, pickUp!.longitude),
-          destination:
-              PointLatLng(destination!.latitude, destination!.longitude),
+          origin: PointLatLng(pickUp.value!.latitude, pickUp.value!.longitude),
+          destination: PointLatLng(
+              destination.value!.latitude, destination.value!.longitude),
           mode: TravelMode.driving,
           alternatives: true,
           avoidFerries: true,
@@ -43,14 +61,14 @@ class RideController extends GetxController {
           avoidTolls: true,
         ),
       );
-      fare = result.durationValues!.first;
-      distance = result.distanceTexts!.first;
-      duration = result.durationTexts!.first;
+      fare.value = result.durationValues!.first;
+      distance.value = result.distanceTexts!.first;
+      duration.value = result.durationTexts!.first;
       if (result.points.isNotEmpty) {
-        polylineCoordinates.clear();
+        polylineCoordinates.value.clear();
 
         for (var point in result.points) {
-          polylineCoordinates.add(
+          polylineCoordinates.value.add(
             LatLng(point.latitude, point.longitude),
           );
         }
@@ -78,11 +96,11 @@ class RideController extends GetxController {
       final ride = RideModel(
         id: fireAuth.currentUser!.uid,
         passenger: passenger!,
-        pick_up: pickUp!,
-        destination: destination!,
-        fare: fare!,
-        distance: distance!,
-        duration: duration!,
+        pick_up: pickUp.value!,
+        destination: destination.value!,
+        fare: fare.value!,
+        distance: distance.value!,
+        duration: duration.value!,
         status: "booking",
         driver: null,
       );

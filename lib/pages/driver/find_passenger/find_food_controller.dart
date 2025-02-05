@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -10,20 +9,77 @@ import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:geolocator/geolocator.dart' as gc;
 
 class FindFoodController extends GetxController {
+  // firebase
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
-  //
+  // google map
   Location location = Location();
   Completer<GoogleMapController> mapController = Completer();
   StreamSubscription<LocationData>? locationSubscription;
   var currentLocation = Rx<LocationData?>(null);
   var zoomLevel = Rx<double>(16);
-  var zooming = Rx<bool>(false);
   var heading = Rx<double>(0);
+  final String mapStyle = '''
+  [
+    {
+      "featureType": "all",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "on"
+        }
+      ]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "landscape",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    }
+  ]
+  ''';
 
-  var mapStyle = Rx<String>(dotenv.env['MAP_STYLE']!);
-
+  // rides
   var allRides = Rx<List<RideModel>>([]);
   var ridesWithin1km = Rx<List<RideModel>>([]);
 
@@ -57,17 +113,27 @@ class FindFoodController extends GetxController {
     }
   }
 
-  Future<void> updateUI() async {
+  Future<void> updateUI({double? zoom}) async {
     try {
       mapController.future.then(
         (value) {
           value.animateCamera(
-            CameraUpdate.newLatLng(
-              LatLng(
-                currentLocation.value!.latitude!,
-                currentLocation.value!.longitude!,
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(
+                  currentLocation.value!.latitude!,
+                  currentLocation.value!.longitude!,
+                ),
+                zoom: zoom ?? zoomLevel.value,
+                bearing: currentLocation.value!.heading!,
               ),
             ),
+            // CameraUpdate.newLatLng(
+            //   LatLng(
+            //     currentLocation.value!.latitude!,
+            //     currentLocation.value!.longitude!,
+            //   ),
+            // ),
           );
         },
       );
