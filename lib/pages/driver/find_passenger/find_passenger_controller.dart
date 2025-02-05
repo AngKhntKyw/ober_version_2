@@ -27,7 +27,7 @@ class FindPassengerController extends GetxController {
   var isAnimating = false.obs;
   var isActive = true.obs;
 
-  //j
+  //
 
   var allRides = Rx<List<RideModel>>([]);
   var ridesWithin1km = Rx<List<RideModel>>([]);
@@ -229,19 +229,19 @@ class FindPassengerController extends GetxController {
 
         //
 
-        // if (isActive.value) {
-        //   if (acceptedRide.value == null) {
-        //     filterRidesWithin1km();
-        //   }
-        //   if (acceptedRide.value != null &&
-        //       acceptedRide.value?.status == "goingToPickUp") {
-        //     getGoingToPickUpPolyPoints();
-        //   }
-        //   if (acceptedRide.value != null &&
-        //       acceptedRide.value?.status == "goingToDestination") {
-        //     getGoingToDestinationPolyPoints();
-        //   }
-        // }
+        if (isActive.value) {
+          if (acceptedRide.value == null) {
+            filterRidesWithin1km();
+          }
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToPickUp") {
+            getGoingToPickUpPolyPoints();
+          }
+          if (acceptedRide.value != null &&
+              acceptedRide.value?.status == "goingToDestination") {
+            getGoingToDestinationPolyPoints();
+          }
+        }
 
         // // Update camera position during animation
         // mapController.future.then((controller) {
