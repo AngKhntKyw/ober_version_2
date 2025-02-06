@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/core/widgets/elevated_buttons.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
+import 'package:ober_version_2/pages/passenger/passenger_nav_bar_page.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_ride_process_controller.dart';
 
 class PassengerRideProcessPage extends StatefulWidget {
@@ -19,11 +20,13 @@ class _PassengerRideProcessPageState extends State<PassengerRideProcessPage> {
   Widget build(BuildContext context) {
     final passengerRideProcessController =
         Get.put(PassengerRideProcessController());
+    final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
       body: Obx(
         () {
-          return passengerRideProcessController.currentLocation.value == null
+          return passengerRideProcessController.currentLocation.value == null ||
+                  passengerRideProcessController.currentRide.value == null
               ? const LoadingIndicators()
               : Stack(
                   children: [
@@ -38,12 +41,13 @@ class _PassengerRideProcessPageState extends State<PassengerRideProcessPage> {
                                 style: passengerRideProcessController.mapStyle,
                                 compassEnabled: false,
                                 zoomControlsEnabled: false,
-                                myLocationEnabled: true,
+                                myLocationEnabled: false,
                                 trafficEnabled: false,
                                 buildingsEnabled: false,
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
                                 zoomGesturesEnabled: true,
+                                myLocationButtonEnabled: false,
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(
                                     passengerRideProcessController
@@ -68,10 +72,58 @@ class _PassengerRideProcessPageState extends State<PassengerRideProcessPage> {
 
                                   await passengerRideProcessController
                                       .getCurrentLocationOnUpdate();
+
+                                  await passengerRideProcessController
+                                      .getDestinationPolyPoints();
                                 },
                                 onCameraMove: (position) {
                                   passengerRideProcessController.onCameraMoved(
                                       position: position);
+                                },
+
+                                // markers
+                                markers: {
+                                  Marker(
+                                    icon: BitmapDescriptor.defaultMarker,
+                                    markerId: const MarkerId('pick up'),
+                                    position: LatLng(
+                                      passengerRideProcessController
+                                          .currentRide.value!.pick_up.latitude,
+                                      passengerRideProcessController
+                                          .currentRide.value!.pick_up.longitude,
+                                    ),
+                                    infoWindow: InfoWindow(
+                                      title: passengerRideProcessController
+                                          .currentRide.value!.pick_up.name,
+                                      snippet: "pick up",
+                                    ),
+                                  ),
+                                  Marker(
+                                    icon: BitmapDescriptor.defaultMarker,
+                                    markerId: const MarkerId('destination'),
+                                    position: LatLng(
+                                      passengerRideProcessController.currentRide
+                                          .value!.destination.latitude,
+                                      passengerRideProcessController.currentRide
+                                          .value!.destination.longitude,
+                                    ),
+                                    infoWindow: InfoWindow(
+                                      title: passengerRideProcessController
+                                          .currentRide.value!.destination.name,
+                                      snippet: "destination",
+                                    ),
+                                  ),
+                                },
+
+                                // polylines
+                                polylines: {
+                                  Polyline(
+                                    polylineId: const PolylineId('route'),
+                                    points: passengerRideProcessController
+                                        .polylineCoordinates.value,
+                                    color: AppPallete.black,
+                                    width: 4,
+                                  ),
                                 },
                               ),
 
@@ -121,16 +173,47 @@ class _PassengerRideProcessPageState extends State<PassengerRideProcessPage> {
                             color: AppPallete.white,
                             border: Border.all(color: AppPallete.black),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  "Booking Status: ${passengerRideProcessController.currentRide.value!.status}"),
-                              ElevatedButtons(
-                                onPressed: () {},
-                                buttonName: "Cancel booking",
-                              ),
-                            ],
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(passengerRideProcessController
+                                    .currentRide.value!.status),
+                                SizedBox(height: size.height / 40),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        "${passengerRideProcessController.currentRide.value!.fare} MMKs"),
+                                    Text(passengerRideProcessController
+                                        .currentRide.value!.distance),
+                                  ],
+                                ),
+                                Text(passengerRideProcessController
+                                    .currentRide.value!.duration),
+                                SizedBox(height: size.height / 40),
+                                const Text("Destination"),
+                                SizedBox(height: size.height / 80),
+                                Text(passengerRideProcessController
+                                    .currentRide.value!.destination.name),
+                                SizedBox(height: size.height / 40),
+                                const Text("Pick up"),
+                                SizedBox(height: size.height / 80),
+                                Text(passengerRideProcessController
+                                    .currentRide.value!.pick_up.name),
+                                SizedBox(height: size.height / 40),
+                                ElevatedButtons(
+                                  onPressed: () async {
+                                    await passengerRideProcessController
+                                        .cancelBooking();
+                                    Get.offAll(const PassengerNavBarPage());
+                                  },
+                                  buttonName: "Cancel booking",
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },

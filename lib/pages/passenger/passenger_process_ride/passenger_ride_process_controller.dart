@@ -3,10 +3,13 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compassx/compassx.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class PassengerRideProcessController extends GetxController {
   // firebase
@@ -85,6 +88,7 @@ class PassengerRideProcessController extends GetxController {
 
   // ride
   var currentRide = Rx<RideModel?>(null);
+  var polylineCoordinates = Rx<List<LatLng>>([]);
 
   //
   @override
@@ -93,6 +97,12 @@ class PassengerRideProcessController extends GetxController {
     getInitialLocation();
     getRideDetail();
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    locationSubscription?.cancel();
+    super.onClose();
   }
 
   void changeCompass() {
@@ -136,9 +146,44 @@ class PassengerRideProcessController extends GetxController {
           currentRide.value = RideModel.fromJson(event.data()!);
         } else {
           currentRide.value = null;
+          log(" just deleted ");
         }
       },
     );
+  }
+
+  Future<void> getDestinationPolyPoints() async {
+    log('getting line...');
+    try {
+      PolylinePoints polylinePoints = PolylinePoints();
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
+        request: PolylineRequest(
+          origin: PointLatLng(currentRide.value!.pick_up.latitude,
+              currentRide.value!.pick_up.longitude),
+          destination: PointLatLng(currentRide.value!.destination.latitude,
+              currentRide.value!.destination.longitude),
+          mode: TravelMode.driving,
+          alternatives: true,
+          avoidFerries: true,
+          avoidHighways: true,
+          avoidTolls: true,
+        ),
+      );
+
+      if (result.points.isNotEmpty) {
+        polylineCoordinates.value.clear();
+
+        for (var point in result.points) {
+          polylineCoordinates.value.add(
+            LatLng(point.latitude, point.longitude),
+          );
+        }
+      }
+      log("Polyline: ${polylineCoordinates.value.length}");
+    } catch (e) {
+      toast(e.toString());
+    }
   }
 
   Future<void> updateUI({double? zoom}) async {
@@ -165,5 +210,16 @@ class PassengerRideProcessController extends GetxController {
 
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
+  }
+
+  Future<void> cancelBooking() async {
+    try {
+      await fireStore
+          .collection('rides')
+          .doc(fireAuth.currentUser!.uid)
+          .delete();
+    } catch (e) {
+      log("Booking cancel error: ${e.toString()}");
+    }
   }
 }

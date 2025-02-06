@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/pages/passenger/home/passenger_home_controller.dart';
-import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_process_ride_page.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_ride_process_page.dart';
 import 'package:ober_version_2/pages/passenger/ride/confirm_destination_page.dart';
 import 'package:overlay_support/overlay_support.dart';

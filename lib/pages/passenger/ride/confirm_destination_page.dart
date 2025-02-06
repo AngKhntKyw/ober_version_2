@@ -22,7 +22,7 @@ class ConfirmDestinationPage extends StatelessWidget {
 
     //
     return Scaffold(
-      body: StreamBuilder(
+      body: StreamBuilder<LocationData>(
         stream: location.onLocationChanged,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
