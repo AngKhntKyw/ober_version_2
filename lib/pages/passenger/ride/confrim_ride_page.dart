@@ -12,86 +12,65 @@ class ConfrimRidePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final rideController = Get.put(RideController());
 
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   rideController.getDestinationPolyPoints();
+    // });s
     // final size = MediaQuery.sizeOf(context);
 
     //
-    return Obx(
-      () {
-        return Scaffold(
-          body: Obx(
-            () {
-              return rideController.currentLocation.value == null
-                  ? const LoadingIndicators()
-                  : GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(
-                          rideController.currentLocation.value!.latitude!,
-                          rideController.currentLocation.value!.longitude!,
-                        ),
-                        zoom: 10,
+    return Scaffold(
+      body: Obx(
+        () {
+          return rideController.currentLocation.value == null
+              ? const LoadingIndicators()
+              : GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      rideController.currentLocation.value!.latitude!,
+                      rideController.currentLocation.value!.longitude!,
+                    ),
+                    zoom: 10,
+                  ),
+                  onMapCreated: (controller) async {
+                    rideController.mapController = controller;
+                  },
+                  markers: {
+                    Marker(
+                      icon: BitmapDescriptor.defaultMarker,
+                      markerId: const MarkerId('pick up'),
+                      position: LatLng(
+                        rideController.pickUp.value!.latitude,
+                        rideController.pickUp.value!.longitude,
                       ),
-                      onMapCreated: (controller) {
-                        rideController.mapController.complete(controller);
-                        rideController.mapController.future
-                            .then((mapController) async {
-                          mapController.animateCamera(
-                            CameraUpdate.newCameraPosition(
-                              CameraPosition(
-                                target: LatLng(
-                                  rideController
-                                      .currentLocation.value!.latitude!,
-                                  rideController
-                                      .currentLocation.value!.longitude!,
-                                ),
-                                zoom: 12,
-                                bearing: rideController
-                                    .currentLocation.value!.heading!,
-                              ),
-                            ),
-                          );
-                          // await mapController
-                          //     .showMarkerInfoWindow(const MarkerId("destination"));
-                        });
-                      },
-                      markers: {
-                        Marker(
-                          icon: BitmapDescriptor.defaultMarker,
-                          markerId: const MarkerId('pick up'),
-                          position: LatLng(
-                            rideController.pickUp.value!.latitude,
-                            rideController.pickUp.value!.longitude,
-                          ),
-                          infoWindow: InfoWindow(
-                            title: rideController.pickUp.value!.name,
-                            snippet: "pick up",
-                          ),
-                        ),
-                        Marker(
-                          icon: BitmapDescriptor.defaultMarker,
-                          markerId: const MarkerId('destination'),
-                          position: LatLng(
-                            rideController.destination.value!.latitude,
-                            rideController.destination.value!.longitude,
-                          ),
-                          infoWindow: InfoWindow(
-                            title: rideController.destination.value!.name,
-                            snippet: "destination",
-                          ),
-                        ),
-                      },
-                      polylines: {
-                        Polyline(
-                          polylineId: const PolylineId('route'),
-                          points: rideController.polylineCoordinates.value,
-                          color: AppPallete.black,
-                          width: 6,
-                        ),
-                      },
-                    );
-            },
-          ),
-        );
-      },
+                      infoWindow: InfoWindow(
+                        title: rideController.pickUp.value!.name,
+                        snippet: "pick up",
+                      ),
+                    ),
+                    Marker(
+                      icon: BitmapDescriptor.defaultMarker,
+                      markerId: const MarkerId('destination'),
+                      position: LatLng(
+                        rideController.destination.value!.latitude,
+                        rideController.destination.value!.longitude,
+                      ),
+                      infoWindow: InfoWindow(
+                        title: rideController.destination.value!.name,
+                        snippet: "destination",
+                      ),
+                    ),
+                  },
+                  polylines: {
+                    Polyline(
+                      polylineId: const PolylineId('route'),
+                      points: rideController.polylineCoordinates.value,
+                      color: AppPallete.black,
+                      width: 4,
+                    ),
+                  },
+                );
+        },
+      ),
     );
   }
 }

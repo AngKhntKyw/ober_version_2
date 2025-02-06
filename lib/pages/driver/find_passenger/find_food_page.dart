@@ -39,6 +39,7 @@ class FindFoodPage extends StatelessWidget {
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
                                 zoomGesturesEnabled: true,
+
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(
                                     findFoodController
@@ -102,6 +103,8 @@ class FindFoodPage extends StatelessWidget {
                                       .toSet(),
                                 },
                               ),
+
+                              // car icon
                               AnimatedRotation(
                                 turns: findFoodController.heading.value /
                                     (2 * math.pi),

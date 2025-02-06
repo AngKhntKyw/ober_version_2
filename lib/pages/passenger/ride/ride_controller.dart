@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,7 +19,7 @@ class RideController extends GetxController {
 
   // google map
   Location location = Location();
-  Completer<GoogleMapController> mapController = Completer();
+  GoogleMapController? mapController;
   StreamSubscription<LocationData>? locationSubscription;
   var currentLocation = Rx<LocationData?>(null);
 
@@ -42,10 +42,32 @@ class RideController extends GetxController {
   }
 
   void getInitialLocation() async {
+    log('Initialize');
     currentLocation.value = await location.getLocation();
   }
 
+  Future<void> updateUI() async {
+    log("Updating UI");
+
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(
+            currentLocation.value!.latitude!,
+            currentLocation.value!.longitude!,
+          ),
+          zoom: 12,
+          bearing: currentLocation.value!.heading!,
+        ),
+      ),
+    );
+    getDestinationPolyPoints();
+    // await mapController?.showMarkerInfoWindow(const MarkerId("destination"));
+    // await mapController?.showMarkerInfoWindow(const MarkerId("pick up"));
+  }
+
   Future<void> getDestinationPolyPoints() async {
+    log('getting line...');
     try {
       PolylinePoints polylinePoints = PolylinePoints();
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
@@ -64,6 +86,7 @@ class RideController extends GetxController {
       fare.value = result.durationValues!.first;
       distance.value = result.distanceTexts!.first;
       duration.value = result.durationTexts!.first;
+
       if (result.points.isNotEmpty) {
         polylineCoordinates.value.clear();
 
@@ -73,6 +96,7 @@ class RideController extends GetxController {
           );
         }
       }
+      log("Polyline: ${polylineCoordinates.value.length}");
     } catch (e) {
       toast(e.toString());
     }
