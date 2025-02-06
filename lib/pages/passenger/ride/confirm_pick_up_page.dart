@@ -36,7 +36,7 @@ class ConfirmPickUpPage extends StatelessWidget {
 
           return PlacePicker(
             apiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
-            onPlacePicked: (LocationResult result) {
+            onPlacePicked: (LocationResult result) async {
               rideController.pickUp.value = AddressModel(
                 name: result.formattedAddress!,
                 latitude: result.latLng!.latitude,
@@ -47,6 +47,7 @@ class ConfirmPickUpPage extends StatelessWidget {
               log("Pic: ${rideController.destination.value}");
               log("Des: ${rideController.destination.value}");
 
+              await rideController.getDestinationPolyPoints();
               Get.to(() => const ConfrimRidePage());
             },
             onMapCreated: (controller) async {

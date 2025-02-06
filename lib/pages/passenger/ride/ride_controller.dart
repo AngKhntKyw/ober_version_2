@@ -6,7 +6,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:ober_version_2/core/models/user_model.dart';
@@ -17,11 +16,64 @@ class RideController extends GetxController {
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
 
-  // google map
-  Location location = Location();
-  GoogleMapController? mapController;
-  StreamSubscription<LocationData>? locationSubscription;
-  var currentLocation = Rx<LocationData?>(null);
+  final String mapStyle = '''
+  [
+    {
+      "featureType": "all",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "on"
+        }
+      ]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "landscape",
+      "elementType": "labels",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    }
+  ]
+  ''';
 
   // ride
   var destination = Rx<AddressModel?>(null);
@@ -37,33 +89,7 @@ class RideController extends GetxController {
   @override
   void onInit() {
     getUserModel();
-    getInitialLocation();
     super.onInit();
-  }
-
-  void getInitialLocation() async {
-    log('Initialize');
-    currentLocation.value = await location.getLocation();
-  }
-
-  Future<void> updateUI() async {
-    log("Updating UI");
-
-    mapController?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(
-            currentLocation.value!.latitude!,
-            currentLocation.value!.longitude!,
-          ),
-          zoom: 12,
-          bearing: currentLocation.value!.heading!,
-        ),
-      ),
-    );
-    getDestinationPolyPoints();
-    // await mapController?.showMarkerInfoWindow(const MarkerId("destination"));
-    // await mapController?.showMarkerInfoWindow(const MarkerId("pick up"));
   }
 
   Future<void> getDestinationPolyPoints() async {
@@ -83,6 +109,7 @@ class RideController extends GetxController {
           avoidTolls: true,
         ),
       );
+
       fare.value = result.durationValues!.first;
       distance.value = result.distanceTexts!.first;
       duration.value = result.durationTexts!.first;

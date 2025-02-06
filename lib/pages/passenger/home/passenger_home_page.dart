@@ -9,6 +9,7 @@ import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/pages/passenger/home/passenger_home_controller.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_process_ride_page.dart';
+import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_ride_process_page.dart';
 import 'package:ober_version_2/pages/passenger/ride/confirm_destination_page.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -183,7 +184,7 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                   : InkWell(
                       borderRadius: BorderRadius.circular(10),
                       onTap: () {
-                        Get.to(() => const PassengerProcessRidePage());
+                        Get.to(() => const PassengerRideProcessPage());
                       },
                       child: Container(
                         alignment: Alignment.center,
