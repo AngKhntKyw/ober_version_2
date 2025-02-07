@@ -70,88 +70,97 @@ class FindFoodPage extends StatelessWidget {
                                 },
 
                                 // markers
-                                markers: {
-                                  ...findFoodController.ridesWithin1km.value
-                                      .map(
-                                        (e) => Marker(
-                                          markerId: MarkerId(e.id),
-                                          position: LatLng(
-                                            e.pick_up.latitude,
-                                            e.pick_up.longitude,
-                                          ),
-                                          icon: BitmapDescriptor.defaultMarker,
-                                        ),
-                                      )
-                                      .toSet(),
-                                },
+                                // markers: {
+                                //   ...findFoodController.ridesWithin1km.value
+                                //       .map(
+                                //         (e) => Marker(
+                                //           markerId: MarkerId(e.id),
+                                //           position: LatLng(
+                                //             e.pick_up.latitude,
+                                //             e.pick_up.longitude,
+                                //           ),
+                                //           icon: BitmapDescriptor.defaultMarker,
+                                //         ),
+                                //       )
+                                //       .toSet(),
+                                // },
 
-                                // circles
-                                circles: {
-                                  ...findFoodController.ridesWithin1km.value
-                                      .map(
-                                        (e) => Circle(
-                                          circleId: CircleId(e.id),
-                                          center: LatLng(e.pick_up.latitude,
-                                              e.pick_up.longitude),
-                                          radius: 1000,
-                                          fillColor: const Color.fromARGB(
-                                              91, 33, 149, 243),
-                                          strokeColor: Colors.blue,
-                                          strokeWidth: 1,
-                                        ),
-                                      )
-                                      .toSet(),
-                                },
+                                // // circles
+                                // circles: {
+                                //   ...findFoodController.ridesWithin1km.value
+                                //       .map(
+                                //         (e) => Circle(
+                                //           circleId: CircleId(e.id),
+                                //           center: LatLng(e.pick_up.latitude,
+                                //               e.pick_up.longitude),
+                                //           radius: 1000,
+                                //           fillColor: const Color.fromARGB(
+                                //               91, 33, 149, 243),
+                                //           strokeColor: Colors.blue,
+                                //           strokeWidth: 1,
+                                //         ),
+                                //       )
+                                //       .toSet(),
+                                // },
                               ),
 
                               // car icon
                               AnimatedRotation(
                                 turns: findFoodController.heading.value /
                                     (2 * math.pi),
+                                // turns: Tween<double>(
+                                //   begin: 0,
+                                //   end: findFoodController.heading.value /
+                                //       (2 * math.pi),
+                                // ).evaluate(const AlwaysStoppedAnimation(1)),
+
                                 duration: const Duration(milliseconds: 500),
                                 curve: Curves.linear,
                                 alignment: Alignment.center,
-                                child: Image.asset(
-                                  'assets/images/car.png',
-                                  height: 40,
-                                  width: 40,
-                                  filterQuality: FilterQuality.high,
+                                child: Opacity(
+                                  opacity: 0.2,
+                                  child: Image.asset(
+                                    'assets/images/car.png',
+                                    height: 40,
+                                    width: 40,
+                                    filterQuality: FilterQuality.high,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Expanded(
-                          flex: 2,
-                          child: Text('sadf'),
-                        ),
+                        // const Expanded(
+                        //   flex: 2,
+                        //   child: Text('sadf'),
+                        // ),
                       ],
                     ),
 
                     //
-                    DraggableScrollableSheet(
-                      initialChildSize: 0.3,
-                      maxChildSize: 1,
-                      minChildSize: 0.3,
-                      snapAnimationDuration: const Duration(milliseconds: 300),
-                      builder: (context, scrollController) {
-                        return Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20),
-                            ),
-                            color: AppPallete.white,
-                            border: Border.all(color: AppPallete.black),
-                          ),
-                          child: BookingStateWidget(
-                            scrollController: scrollController,
-                            findFoodControllers: findFoodController,
-                          ),
-                        );
-                      },
-                    ),
+                    // DraggableScrollableSheet(
+                    //   initialChildSize: 0.3,
+                    //   maxChildSize: 1,
+                    //   minChildSize: 0.3,
+                    //   snapAnimationDuration: const Duration(milliseconds: 300),
+                    //   builder: (context, scrollController) {
+                    //     return Container(
+                    //       padding: const EdgeInsets.all(10),
+                    //       decoration: BoxDecoration(
+                    //         borderRadius: const BorderRadius.only(
+                    //           topLeft: Radius.circular(20),
+                    //           topRight: Radius.circular(20),
+                    //         ),
+                    //         color: AppPallete.white,
+                    //         border: Border.all(color: AppPallete.black),
+                    //       ),
+                    //       child: BookingStateWidget(
+                    //         scrollController: scrollController,
+                    //         findFoodControllers: findFoodController,
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                   ],
                 );
           //

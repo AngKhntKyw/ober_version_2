@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,9 @@ class FindFoodController extends GetxController {
   var currentLocation = Rx<LocationData?>(null);
   var zoomLevel = Rx<double>(16);
   var heading = Rx<double>(0);
+  var previousHeading = Rx<double>(0.0);
+  double rotationThreshold = 5 * (math.pi / 180);
+
   final String mapStyle = '''
   [
     {
@@ -134,6 +138,7 @@ class FindFoodController extends GetxController {
             //     currentLocation.value!.latitude!,
             //     currentLocation.value!.longitude!,
             //   ),
+
             // ),
           );
         },
@@ -145,7 +150,13 @@ class FindFoodController extends GetxController {
 
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
-    heading.value = calculateRotation(position.bearing);
+    // heading.value = calculateRotation(position.bearing);
+    double newHeading = calculateRotation(position.bearing);
+
+    if ((newHeading - previousHeading.value).abs() > rotationThreshold) {
+      heading.value = newHeading;
+      previousHeading.value = newHeading;
+    }
   }
 
   double calculateRotation(double cameraBearing) {
@@ -153,7 +164,7 @@ class FindFoodController extends GetxController {
     if (rotation < 0) {
       rotation += 360;
     }
-    return rotation * (3.141592653589793 / 180);
+    return rotation * (math.pi / 180); // Convert to radians
   }
 
   void getRides() {

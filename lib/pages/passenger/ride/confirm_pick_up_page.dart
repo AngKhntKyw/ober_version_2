@@ -89,7 +89,7 @@ class ConfirmPickUpPage extends StatelessWidget {
             autoCompleteOverlayElevation: 10,
             autocompletePlacesSearchRadius: 10,
             pinPointingDebounceDuration: 0,
-            selectedActionButtonChild: const Text("Confirm destination"),
+            selectedActionButtonChild: const Text("Confirm pick up"),
           );
         },
       ),

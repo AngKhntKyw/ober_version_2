@@ -7,15 +7,9 @@ import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/passenger/passenger_nav_bar_page.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_ride_process_controller.dart';
 
-class PassengerRideProcessPage extends StatefulWidget {
+class PassengerRideProcessPage extends StatelessWidget {
   const PassengerRideProcessPage({super.key});
 
-  @override
-  State<PassengerRideProcessPage> createState() =>
-      _PassengerRideProcessPageState();
-}
-
-class _PassengerRideProcessPageState extends State<PassengerRideProcessPage> {
   @override
   Widget build(BuildContext context) {
     final passengerRideProcessController =

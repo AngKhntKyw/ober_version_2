@@ -89,6 +89,7 @@ class RideController extends GetxController {
   @override
   void onInit() {
     getUserModel();
+    log("Ride comtroller init");
     super.onInit();
   }
 

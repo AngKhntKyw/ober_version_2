@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -7,54 +6,60 @@ import 'package:ober_version_2/core/models/user_model.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 class DriverHomeController extends GetxController {
-  final FirebaseAuth fireAuth = FirebaseAuth.instance;
-  final FirebaseFirestore fireStore = FirebaseFirestore.instance;
+  final FirebaseAuth _fireAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
 
   var userModel = Rx<UserModel?>(null);
   var currentRide = Rx<RideModel?>(null);
 
   @override
   void onInit() {
-    getUserInfo();
     super.onInit();
+    getUserInfo();
   }
 
-  void getUserInfo() {
+  /// Fetches user information and listens for changes.
+  void getUserInfo() async {
     try {
-      fireStore
-          .collection('users')
-          .doc(fireAuth.currentUser!.uid)
-          .snapshots()
-          .listen(
-        (event) {
-          log(event.data().toString());
-
-          if (event.exists) {
-            userModel.value = UserModel.fromJson(event.data()!);
-            try {
-              fireStore
-                  .collection('rides')
-                  .doc(userModel.value!.current_ride_id ?? "")
-                  .snapshots()
-                  .listen(
-                (event) {
-                  if (event.exists) {
-                    currentRide.value = RideModel.fromJson(event.data()!);
-                  } else {
-                    currentRide.value = null;
-                  }
-                },
-              );
-            } catch (e) {
-              toast(e.toString());
-            }
-          } else {
-            userModel.value = null;
-          }
-        },
-      );
+      final userDoc =
+          _fireStore.collection('users').doc(_fireAuth.currentUser!.uid);
+      userDoc.snapshots().listen((userSnapshot) {
+        if (userSnapshot.exists) {
+          userModel.value = UserModel.fromJson(userSnapshot.data()!);
+          listenToCurrentRide(userModel.value!.current_ride_id);
+        } else {
+          userModel.value = null;
+          currentRide.value = null;
+        }
+      });
     } catch (e) {
-      toast(e.toString());
+      showError(e.toString());
     }
+  }
+
+  /// Listens to the current ride based on the provided ride ID.
+  void listenToCurrentRide(String? rideId) {
+    if (rideId == null || rideId.isEmpty) {
+      currentRide.value = null;
+      return;
+    }
+
+    try {
+      final rideDoc = _fireStore.collection('rides').doc(rideId);
+      rideDoc.snapshots().listen((rideSnapshot) {
+        if (rideSnapshot.exists) {
+          currentRide.value = RideModel.fromJson(rideSnapshot.data()!);
+        } else {
+          currentRide.value = null;
+        }
+      });
+    } catch (e) {
+      showError(e.toString());
+    }
+  }
+
+  /// Displays an error message using a toast.
+  void showError(String message) {
+    toast(message);
   }
 }
