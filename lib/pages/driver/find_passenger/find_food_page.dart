@@ -32,7 +32,7 @@ class FindFoodPage extends StatelessWidget {
                               GoogleMap(
                                 style: findFoodController.mapStyle,
                                 compassEnabled: false,
-                                zoomControlsEnabled: false,
+                                zoomControlsEnabled: true,
                                 myLocationEnabled: true,
                                 trafficEnabled: false,
                                 buildingsEnabled: false,
@@ -106,14 +106,11 @@ class FindFoodPage extends StatelessWidget {
 
                               // car icon
                               AnimatedRotation(
-                                turns: findFoodController.heading.value /
-                                    (2 * math.pi),
-                                // turns: Tween<double>(
-                                //   begin: 0,
-                                //   end: findFoodController.heading.value /
-                                //       (2 * math.pi),
-                                // ).evaluate(const AlwaysStoppedAnimation(1)),
-
+                                turns: Tween<double>(
+                                  begin: 0,
+                                  end: findFoodController.heading.value /
+                                      (2 * math.pi),
+                                ).evaluate(const AlwaysStoppedAnimation(1.0)),
                                 duration: const Duration(milliseconds: 500),
                                 curve: Curves.linear,
                                 alignment: Alignment.center,

@@ -40,7 +40,7 @@ class FindFoodController extends GetxController {
       "elementType": "labels",
       "stylers": [
         {
-          "visibility": "on"
+          "visibility": "off"
         }
       ]
     },
@@ -121,26 +121,14 @@ class FindFoodController extends GetxController {
     try {
       mapController.future.then(
         (value) {
-          value.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(
-                  currentLocation.value!.latitude!,
-                  currentLocation.value!.longitude!,
-                ),
-                zoom: zoom ?? zoomLevel.value,
-                bearing: currentLocation.value!.heading!,
-              ),
+          value.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+            target: LatLng(
+              currentLocation.value!.latitude!,
+              currentLocation.value!.longitude!,
             ),
-
-            // CameraUpdate.newLatLng(
-            //   LatLng(
-            //     currentLocation.value!.latitude!,
-            //     currentLocation.value!.longitude!,
-            //   ),
-
-            // ),
-          );
+            // bearing: currentLocation.value!.heading!,
+            zoom: zoom ?? zoomLevel.value,
+          )));
         },
       );
     } catch (e) {
@@ -164,7 +152,7 @@ class FindFoodController extends GetxController {
     if (rotation < 0) {
       rotation += 360;
     }
-    return rotation * (math.pi / 180); // Convert to radians
+    return rotation * (math.pi / 180);
   }
 
   void getRides() {
