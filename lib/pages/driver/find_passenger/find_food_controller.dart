@@ -5,9 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
-import 'package:geolocator/geolocator.dart' as gc;
+import 'package:geolocator/geolocator.dart';
+import 'package:ober_version_2/core/models/user_model.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 class FindFoodController extends GetxController {
   // firebase
@@ -15,10 +17,10 @@ class FindFoodController extends GetxController {
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
 
   // google map
-  Location location = Location();
+  // Location location = Location();
   Completer<GoogleMapController> mapController = Completer();
-  StreamSubscription<LocationData>? locationSubscription;
-  var currentLocation = Rx<LocationData?>(null);
+  StreamSubscription<Position>? locationSubscription;
+  var currentLocation = Rx<Position?>(null);
   var zoomLevel = Rx<double>(16);
   var heading = Rx<double>(0);
   var previousHeading = Rx<double>(0.0);
@@ -80,17 +82,23 @@ class FindFoodController extends GetxController {
         }
       ]
     }
-  ]
+  ]s
   ''';
 
   // rides
   var allRides = Rx<List<RideModel>>([]);
   var ridesWithin1km = Rx<List<RideModel>>([]);
+  var currentRide = Rx<RideModel?>(null);
+
+  // user info
+  var userModel = Rx<UserModel?>(null);
 
   @override
   void onInit() {
+    getUserInfo();
     getInitialLocation();
     getRides();
+
     super.onInit();
   }
 
@@ -100,14 +108,58 @@ class FindFoodController extends GetxController {
     super.onClose();
   }
 
+  void getUserInfo() async {
+    try {
+      final userDoc =
+          fireStore.collection('users').doc(fireAuth.currentUser!.uid);
+      userDoc.snapshots().listen((userSnapshot) {
+        if (userSnapshot.exists) {
+          userModel.value = UserModel.fromJson(userSnapshot.data()!);
+          listenToCurrentRide(userModel.value!.current_ride_id);
+        } else {
+          userModel.value = null;
+        }
+      });
+    } catch (e) {
+      toast(e.toString());
+    }
+  }
+
+  void listenToCurrentRide(String? rideId) {
+    if (rideId == null || rideId.isEmpty) {
+      currentRide.value = null;
+      return;
+    }
+
+    try {
+      final rideDoc = fireStore.collection('rides').doc(rideId);
+      rideDoc.snapshots().listen((rideSnapshot) {
+        if (rideSnapshot.exists) {
+          currentRide.value = RideModel.fromJson(rideSnapshot.data()!);
+        } else {
+          currentRide.value = null;
+        }
+      });
+    } catch (e) {
+      toast(e.toString());
+    }
+  }
+
   void getInitialLocation() async {
-    currentLocation.value = await location.getLocation();
+    // currentLocation.value = await location.getLocation();
+    currentLocation.value = await Geolocator.getCurrentPosition();
   }
 
   Future<void> getCurrentLocationOnUpdate() async {
     try {
+      // locationSubscription =
+      //     location.onLocationChanged.listen((LocationData locationData) async {
+      //   currentLocation.value = locationData;
+      //   await updateUI();
+      //   await filterRidesWithin1km();
+      // });
       locationSubscription =
-          location.onLocationChanged.listen((LocationData locationData) async {
+          Geolocator.getPositionStream().listen((locationData) async {
         currentLocation.value = locationData;
         await updateUI();
         await filterRidesWithin1km();
@@ -121,14 +173,13 @@ class FindFoodController extends GetxController {
     try {
       mapController.future.then(
         (value) {
-          value.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
-            target: LatLng(
-              currentLocation.value!.latitude!,
-              currentLocation.value!.longitude!,
+          value.animateCamera(
+            CameraUpdate.newLatLngZoom(
+              LatLng(currentLocation.value!.latitude,
+                  currentLocation.value!.longitude),
+              zoom ?? zoomLevel.value,
             ),
-            // bearing: currentLocation.value!.heading!,
-            zoom: zoom ?? zoomLevel.value,
-          )));
+          );
         },
       );
     } catch (e) {
@@ -166,7 +217,7 @@ class FindFoodController extends GetxController {
   }
 
   bool checkDistanceWithin1km(RideModel passengerPickUp) {
-    double distanceInMeters = gc.Geolocator.distanceBetween(
+    double distanceInMeters = Geolocator.distanceBetween(
       currentLocation.value!.latitude!,
       currentLocation.value!.longitude!,
       passengerPickUp.pick_up.latitude,
@@ -183,6 +234,22 @@ class FindFoodController extends GetxController {
       if (checkDistanceWithin1km(ride)) {
         ridesWithin1km.value.add(ride);
       }
+    }
+  }
+
+  Future<void> acceptBooking({required RideModel ride}) async {
+    try {
+      log(ride.toString());
+      await fireStore
+          .collection('users')
+          .doc(fireAuth.currentUser!.uid)
+          .update({"current_ride_id": ride.id});
+      await fireStore.collection('rides').doc(ride.id).update({
+        "driver": userModel.value!.toJson(),
+        "status": "goingToPickUp",
+      });
+    } catch (e) {
+      toast("$e");
     }
   }
 }

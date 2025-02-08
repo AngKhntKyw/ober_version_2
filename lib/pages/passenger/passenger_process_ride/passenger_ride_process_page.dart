@@ -40,6 +40,7 @@ class PassengerRideProcessPage extends StatelessWidget {
                                 buildingsEnabled: false,
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
+
                                 zoomGesturesEnabled: true,
                                 myLocationButtonEnabled: false,
                                 initialCameraPosition: CameraPosition(

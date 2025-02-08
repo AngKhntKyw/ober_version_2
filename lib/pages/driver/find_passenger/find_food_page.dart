@@ -39,13 +39,12 @@ class FindFoodPage extends StatelessWidget {
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
                                 zoomGesturesEnabled: true,
-
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(
                                     findFoodController
-                                        .currentLocation.value!.latitude!,
+                                        .currentLocation.value!.latitude,
                                     findFoodController
-                                        .currentLocation.value!.longitude!,
+                                        .currentLocation.value!.longitude,
                                   ),
                                   zoom: 10,
                                 ),
@@ -70,38 +69,38 @@ class FindFoodPage extends StatelessWidget {
                                 },
 
                                 // markers
-                                // markers: {
-                                //   ...findFoodController.ridesWithin1km.value
-                                //       .map(
-                                //         (e) => Marker(
-                                //           markerId: MarkerId(e.id),
-                                //           position: LatLng(
-                                //             e.pick_up.latitude,
-                                //             e.pick_up.longitude,
-                                //           ),
-                                //           icon: BitmapDescriptor.defaultMarker,
-                                //         ),
-                                //       )
-                                //       .toSet(),
-                                // },
+                                markers: {
+                                  ...findFoodController.ridesWithin1km.value
+                                      .map(
+                                        (e) => Marker(
+                                          markerId: MarkerId(e.id),
+                                          position: LatLng(
+                                            e.pick_up.latitude,
+                                            e.pick_up.longitude,
+                                          ),
+                                          icon: BitmapDescriptor.defaultMarker,
+                                        ),
+                                      )
+                                      .toSet(),
+                                },
 
-                                // // circles
-                                // circles: {
-                                //   ...findFoodController.ridesWithin1km.value
-                                //       .map(
-                                //         (e) => Circle(
-                                //           circleId: CircleId(e.id),
-                                //           center: LatLng(e.pick_up.latitude,
-                                //               e.pick_up.longitude),
-                                //           radius: 1000,
-                                //           fillColor: const Color.fromARGB(
-                                //               91, 33, 149, 243),
-                                //           strokeColor: Colors.blue,
-                                //           strokeWidth: 1,
-                                //         ),
-                                //       )
-                                //       .toSet(),
-                                // },
+                                // circles
+                                circles: {
+                                  ...findFoodController.ridesWithin1km.value
+                                      .map(
+                                        (e) => Circle(
+                                          circleId: CircleId(e.id),
+                                          center: LatLng(e.pick_up.latitude,
+                                              e.pick_up.longitude),
+                                          radius: 1000,
+                                          fillColor: const Color.fromARGB(
+                                              91, 33, 149, 243),
+                                          strokeColor: Colors.blue,
+                                          strokeWidth: 1,
+                                        ),
+                                      )
+                                      .toSet(),
+                                },
                               ),
 
                               // car icon
@@ -127,37 +126,64 @@ class FindFoodPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        // const Expanded(
-                        //   flex: 2,
-                        //   child: Text('sadf'),
-                        // ),
+                        const Expanded(
+                          flex: 2,
+                          child: Text('sadf'),
+                        ),
                       ],
+                    ),
+                    Positioned(
+                      top: 40,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: AppPallete.white,
+                          border: Border.all(color: AppPallete.black),
+                        ),
+                        child: Text(
+                          findFoodController.currentRide.value.toString(),
+                          maxLines: 2,
+                        ),
+                      ),
                     ),
 
                     //
-                    // DraggableScrollableSheet(
-                    //   initialChildSize: 0.3,
-                    //   maxChildSize: 1,
-                    //   minChildSize: 0.3,
-                    //   snapAnimationDuration: const Duration(milliseconds: 300),
-                    //   builder: (context, scrollController) {
-                    //     return Container(
-                    //       padding: const EdgeInsets.all(10),
-                    //       decoration: BoxDecoration(
-                    //         borderRadius: const BorderRadius.only(
-                    //           topLeft: Radius.circular(20),
-                    //           topRight: Radius.circular(20),
-                    //         ),
-                    //         color: AppPallete.white,
-                    //         border: Border.all(color: AppPallete.black),
-                    //       ),
-                    //       child: BookingStateWidget(
-                    //         scrollController: scrollController,
-                    //         findFoodControllers: findFoodController,
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
+                    DraggableScrollableSheet(
+                      initialChildSize: 0.3,
+                      maxChildSize: 1,
+                      minChildSize: 0.3,
+                      snapAnimationDuration: const Duration(milliseconds: 300),
+                      builder: (context, scrollController) {
+                        return Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20),
+                            ),
+                            color: AppPallete.white,
+                            border: Border.all(color: AppPallete.black),
+                          ),
+                          child: findFoodController.currentRide.value == null
+
+                              // no active ride
+                              ? BookingStateWidget(
+                                  scrollController: scrollController,
+                                  findFoodController: findFoodController,
+                                )
+
+                              // current ride
+                              : CurrentRideCard(
+                                  ride: findFoodController.currentRide.value!,
+                                  findFoodController: findFoodController,
+                                  scrollController: scrollController,
+                                ),
+                        );
+                      },
+                    ),
                   ],
                 );
           //
@@ -169,11 +195,11 @@ class FindFoodPage extends StatelessWidget {
 
 class BookingStateWidget extends StatefulWidget {
   final ScrollController scrollController;
-  final FindFoodController findFoodControllers;
+  final FindFoodController findFoodController;
   const BookingStateWidget({
     super.key,
     required this.scrollController,
-    required this.findFoodControllers,
+    required this.findFoodController,
   });
 
   @override
@@ -192,20 +218,20 @@ class _BookingStateWidgetState extends State<BookingStateWidget> {
         children: [
           SizedBox(height: size.height / 40),
           Text(
-              'Total Bookings : ${widget.findFoodControllers.ridesWithin1km.value.length}'),
+              'Total Bookings : ${widget.findFoodController.ridesWithin1km.value.length}'),
           SizedBox(height: size.height / 40),
           const Divider(),
           ListView.builder(
             controller: widget.scrollController,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: widget.findFoodControllers.ridesWithin1km.value.length,
+            itemCount: widget.findFoodController.ridesWithin1km.value.length,
             itemBuilder: (context, index) {
               final ride =
-                  widget.findFoodControllers.ridesWithin1km.value[index];
+                  widget.findFoodController.ridesWithin1km.value[index];
               return RideCard(
                 ride: ride,
-                findFoodControllers: widget.findFoodControllers,
+                findFoodController: widget.findFoodController,
               );
             },
           ),
@@ -217,12 +243,12 @@ class _BookingStateWidgetState extends State<BookingStateWidget> {
 
 class RideCard extends StatelessWidget {
   final RideModel ride;
-  final FindFoodController findFoodControllers;
+  final FindFoodController findFoodController;
 
   const RideCard({
     super.key,
     required this.ride,
-    required this.findFoodControllers,
+    required this.findFoodController,
   });
 
   @override
@@ -288,12 +314,102 @@ class RideCard extends StatelessWidget {
         ),
         SizedBox(height: size.height / 40),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            findFoodController.acceptBooking(ride: ride);
+          },
           child: const Text("Accept booking"),
         ),
         SizedBox(height: size.height / 40),
         const Divider(),
       ],
+    );
+  }
+}
+
+class CurrentRideCard extends StatelessWidget {
+  final RideModel ride;
+  final FindFoodController findFoodController;
+  final ScrollController scrollController;
+
+  const CurrentRideCard({
+    super.key,
+    required this.ride,
+    required this.findFoodController,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+
+    return SingleChildScrollView(
+      controller: scrollController,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("${ride.fare} MMKs"),
+              Text(ride.distance),
+            ],
+          ),
+          Text(ride.duration),
+          SizedBox(height: size.height / 40),
+          const Text("Destination"),
+          Text(ride.destination.name),
+          SizedBox(height: size.height / 40),
+          const Text("Pick up"),
+          Text(ride.pick_up.name),
+          SizedBox(height: size.height / 40),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: AppPallete.black,
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppPallete.black,
+                      backgroundImage: CachedNetworkImageProvider(
+                          ride.passenger.profile_image),
+                    ),
+                  ),
+                  SizedBox(width: size.width / 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(ride.passenger.name),
+                      Text(ride.passenger.email),
+                    ],
+                  ),
+                ],
+              ),
+              CircleAvatar(
+                backgroundColor: AppPallete.black,
+                child: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.call,
+                    color: AppPallete.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: size.height / 40),
+          ElevatedButton(
+            onPressed: () {},
+            child: const Text("Pick up passenger"),
+          ),
+          SizedBox(height: size.height / 40),
+          const Divider(),
+        ],
+      ),
     );
   }
 }
