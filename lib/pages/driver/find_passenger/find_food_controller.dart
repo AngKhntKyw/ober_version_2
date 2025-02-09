@@ -199,7 +199,7 @@ class FindFoodController extends GetxController {
   }
 
   double calculateRotation(double cameraBearing) {
-    double rotation = (currentLocation.value!.heading! - cameraBearing) % 360;
+    double rotation = (currentLocation.value!.heading - cameraBearing) % 360;
     if (rotation < 0) {
       rotation += 360;
     }
@@ -218,8 +218,8 @@ class FindFoodController extends GetxController {
 
   bool checkDistanceWithin1km(RideModel passengerPickUp) {
     double distanceInMeters = Geolocator.distanceBetween(
-      currentLocation.value!.latitude!,
-      currentLocation.value!.longitude!,
+      currentLocation.value!.latitude,
+      currentLocation.value!.longitude,
       passengerPickUp.pick_up.latitude,
       passengerPickUp.pick_up.longitude,
     );
@@ -251,5 +251,23 @@ class FindFoodController extends GetxController {
     } catch (e) {
       toast("$e");
     }
+  }
+
+  Future<void> pickUpPassenger() async {
+    await fireStore.collection('rides').doc(currentRide.value!.id).update({
+      "status": "goingToDestination",
+    });
+  }
+
+  Future<void> dropOffPassenger() async {
+    await fireStore.collection('rides').doc(currentRide.value!.id).update({
+      "status": "completeRide",
+    });
+    await fireStore.collection('rides').doc(currentRide.value!.id).delete();
+
+    await fireStore
+        .collection('users')
+        .doc(fireAuth.currentUser!.uid)
+        .update({"current_ride_id": null});
   }
 }

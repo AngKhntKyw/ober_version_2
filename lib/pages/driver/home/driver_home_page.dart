@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:location/location.dart';
 import 'package:ober_version_2/auth_gate.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
 import 'package:ober_version_2/pages/driver/find_passenger/find_client_page.dart';
@@ -106,7 +105,9 @@ class _DriverHomePageState extends State<DriverHomePage> {
                   : InkWell(
                       borderRadius: BorderRadius.circular(10),
                       onTap: () {
-                        Get.to(() => const FindPassengerPage());
+                        // Get.to(() => const FindPassengerPage());
+
+                        Get.to(() => const FindFoodPage());
                       },
                       child: Container(
                         alignment: Alignment.center,

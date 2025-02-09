@@ -1,3 +1,4 @@
+import 'package:action_slider/action_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -402,9 +403,31 @@ class CurrentRideCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: size.height / 40),
-          ElevatedButton(
-            onPressed: () {},
-            child: const Text("Pick up passenger"),
+          Center(
+            child: ActionSlider.standard(
+              sliderBehavior: SliderBehavior.move,
+              rolling: false,
+              loadingIcon: const LoadingIndicators(),
+              loadingAnimationCurve: Curves.easeIn,
+              backgroundColor: AppPallete.black,
+              toggleColor: AppPallete.white,
+              iconAlignment: Alignment.center,
+              child: Text(
+                findFoodController.currentRide.value!.status == "goingToPickUp"
+                    ? 'Slide to pick up passenger'
+                    : 'Slide to drop off passenger',
+                style: const TextStyle(color: AppPallete.white),
+              ),
+              action: (controller) async {
+                controller.loading();
+                await Future.delayed(const Duration(seconds: 3));
+                controller.success();
+                findFoodController.currentRide.value!.status == "goingToPickUp"
+                    ? findFoodController.pickUpPassenger()
+                    : findFoodController.dropOffPassenger();
+                controller.reset();
+              },
+            ),
           ),
           SizedBox(height: size.height / 40),
           const Divider(),
