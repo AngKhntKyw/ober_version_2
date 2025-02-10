@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:compassx/compassx.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
@@ -91,12 +92,16 @@ class PassengerRideProcessController extends GetxController {
   var currentRide = Rx<RideModel?>(null);
   var polylineCoordinates = Rx<List<LatLng>>([]);
 
+  // driver
+  var driverLocationIcon = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
+
   //
   @override
   void onInit() {
     changeCompass();
     getInitialLocation();
     getRideDetail();
+    addDriverLocationMarker();
     super.onInit();
   }
 
@@ -118,6 +123,14 @@ class PassengerRideProcessController extends GetxController {
       compassHeading.value += delta / 360;
       previousHeading.value = newHeading;
     });
+  }
+
+  void addDriverLocationMarker() async {
+    final ByteData byteData = await rootBundle.load("assets/images/car.png");
+    final Uint8List bytes = byteData.buffer.asUint8List();
+    final BitmapDescriptor icon =
+        BitmapDescriptor.bytes(bytes, width: 40, height: 40);
+    driverLocationIcon.value = icon;
   }
 
   void getInitialLocation() async {
@@ -145,6 +158,20 @@ class PassengerRideProcessController extends GetxController {
       (event) {
         if (event.exists) {
           currentRide.value = RideModel.fromJson(event.data()!);
+          currentRide.value!.status == "goingToPickUp"
+              ? getDestinationPolyPoints(
+                  origin: PointLatLng(
+                      currentRide.value!.driver!.current_address!.latitude,
+                      currentRide.value!.driver!.current_address!.longitude),
+                  destination: PointLatLng(currentRide.value!.pick_up.latitude,
+                      currentRide.value!.pick_up.longitude))
+              : getDestinationPolyPoints(
+                  origin: PointLatLng(
+                      currentRide.value!.driver!.current_address!.latitude,
+                      currentRide.value!.driver!.current_address!.longitude),
+                  destination: PointLatLng(
+                      currentRide.value!.destination.latitude,
+                      currentRide.value!.destination.longitude));
         } else {
           currentRide.value = null;
           log(" just deleted ");
@@ -153,17 +180,16 @@ class PassengerRideProcessController extends GetxController {
     );
   }
 
-  Future<void> getDestinationPolyPoints() async {
+  Future<void> getDestinationPolyPoints(
+      {required PointLatLng origin, required PointLatLng destination}) async {
     log('getting line...');
     try {
       PolylinePoints polylinePoints = PolylinePoints();
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
         googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
         request: PolylineRequest(
-          origin: PointLatLng(currentRide.value!.pick_up.latitude,
-              currentRide.value!.pick_up.longitude),
-          destination: PointLatLng(currentRide.value!.destination.latitude,
-              currentRide.value!.destination.longitude),
+          origin: origin,
+          destination: destination,
           mode: TravelMode.driving,
           alternatives: true,
           avoidFerries: true,
@@ -195,8 +221,8 @@ class PassengerRideProcessController extends GetxController {
             CameraUpdate.newCameraPosition(
               CameraPosition(
                 target: LatLng(
-                  currentLocation.value!.latitude!,
-                  currentLocation.value!.longitude!,
+                  currentLocation.value!.latitude,
+                  currentLocation.value!.longitude,
                 ),
                 zoom: zoom ?? zoomLevel.value,
               ),
@@ -219,6 +245,10 @@ class PassengerRideProcessController extends GetxController {
           .collection('rides')
           .doc(fireAuth.currentUser!.uid)
           .delete();
+      await fireStore
+          .collection('users')
+          .doc(currentRide.value!.id)
+          .update({"current_ride_id": null});
     } catch (e) {
       log("Booking cancel error: ${e.toString()}");
     }

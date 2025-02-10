@@ -55,19 +55,19 @@ class ConfirmDestinationPage extends StatelessWidget {
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
                       target: LatLng(
-                        currentLocation.latitude!,
-                        currentLocation.longitude!,
+                        currentLocation.latitude,
+                        currentLocation.longitude,
                       ),
                       zoom: 18,
-                      bearing: currentLocation.heading!,
+                      bearing: currentLocation.heading,
                     ),
                   ),
                 );
               });
             },
             initialLocation: LatLng(
-              currentLocation!.latitude!,
-              currentLocation.longitude!,
+              currentLocation!.latitude,
+              currentLocation.longitude,
             ),
             searchInputConfig: const SearchInputConfig(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

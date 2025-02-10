@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
@@ -46,9 +48,9 @@ class PassengerRideProcessPage extends StatelessWidget {
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(
                                     passengerRideProcessController
-                                        .currentLocation.value!.latitude!,
+                                        .currentLocation.value!.latitude,
                                     passengerRideProcessController
-                                        .currentLocation.value!.longitude!,
+                                        .currentLocation.value!.longitude,
                                   ),
                                   zoom: 10,
                                 ),
@@ -69,7 +71,30 @@ class PassengerRideProcessPage extends StatelessWidget {
                                       .getCurrentLocationOnUpdate();
 
                                   await passengerRideProcessController
-                                      .getDestinationPolyPoints();
+                                      .getDestinationPolyPoints(
+                                    origin: PointLatLng(
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .pick_up
+                                            .latitude,
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .pick_up
+                                            .longitude),
+                                    destination: PointLatLng(
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .destination
+                                            .latitude,
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .destination
+                                            .longitude),
+                                  );
                                 },
                                 onCameraMove: (position) {
                                   passengerRideProcessController.onCameraMoved(
@@ -108,6 +133,37 @@ class PassengerRideProcessPage extends StatelessWidget {
                                       snippet: "destination",
                                     ),
                                   ),
+
+                                  // driver marker
+                                  if (passengerRideProcessController
+                                          .currentRide.value!.driver !=
+                                      null)
+                                    Marker(
+                                      icon: passengerRideProcessController
+                                          .driverLocationIcon.value,
+                                      markerId: const MarkerId('driver'),
+                                      position: LatLng(
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .driver!
+                                            .current_address!
+                                            .latitude,
+                                        passengerRideProcessController
+                                            .currentRide
+                                            .value!
+                                            .driver!
+                                            .current_address!
+                                            .longitude,
+                                      ),
+                                      anchor: const Offset(0.5, 0.5),
+                                      rotation: passengerRideProcessController
+                                          .currentRide
+                                          .value!
+                                          .driver!
+                                          .current_address!
+                                          .rotation,
+                                    ),
                                 },
 
                                 // polylines
@@ -175,6 +231,78 @@ class PassengerRideProcessPage extends StatelessWidget {
                               children: [
                                 Text(passengerRideProcessController
                                     .currentRide.value!.status),
+                                SizedBox(height: size.height / 40),
+
+                                //
+                                if (passengerRideProcessController
+                                        .currentRide.value!.status !=
+                                    "booking")
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 22,
+                                            backgroundColor: AppPallete.black,
+                                            child: CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: AppPallete.black,
+                                              backgroundImage:
+                                                  CachedNetworkImageProvider(
+                                                      passengerRideProcessController
+                                                          .currentRide
+                                                          .value!
+                                                          .driver!
+                                                          .profile_image),
+                                            ),
+                                          ),
+                                          SizedBox(width: size.width / 20),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                  passengerRideProcessController
+                                                      .currentRide
+                                                      .value!
+                                                      .driver!
+                                                      .name),
+                                              Text(
+                                                  passengerRideProcessController
+                                                      .currentRide
+                                                      .value!
+                                                      .driver!
+                                                      .email),
+                                              Text(
+                                                  "${passengerRideProcessController.currentRide.value!.driver!.car!.name}-${passengerRideProcessController.currentRide.value!.driver!.car!.color}"),
+                                              Text(
+                                                  passengerRideProcessController
+                                                      .currentRide
+                                                      .value!
+                                                      .driver!
+                                                      .car!
+                                                      .plate_number),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      CircleAvatar(
+                                        backgroundColor: AppPallete.black,
+                                        child: IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                            Icons.call,
+                                            color: AppPallete.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                //
+
                                 SizedBox(height: size.height / 40),
                                 Row(
                                   mainAxisAlignment:

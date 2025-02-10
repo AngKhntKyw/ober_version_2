@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:ober_version_2/auth_gate.dart';
+import 'package:ober_version_2/core/configs/location_config.dart';
 import 'package:ober_version_2/core/configs/notification_config.dart';
 import 'package:ober_version_2/firebase_options.dart';
 import 'package:ober_version_2/core/themes/light_theme.dart';
@@ -24,6 +25,7 @@ void main() async {
   );
 
   initNoti();
+  locationConfig();
 
   runApp(const MyApp());
 }
