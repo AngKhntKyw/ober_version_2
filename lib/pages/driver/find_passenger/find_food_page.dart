@@ -40,6 +40,7 @@ class FindFoodPage extends StatelessWidget {
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
                                 zoomGesturesEnabled: true,
+
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(
                                     findFoodController
@@ -49,6 +50,7 @@ class FindFoodPage extends StatelessWidget {
                                   ),
                                   zoom: 10,
                                 ),
+
                                 onMapCreated: (controller) async {
                                   findFoodController.mapController
                                       .complete(controller);
@@ -70,37 +72,93 @@ class FindFoodPage extends StatelessWidget {
                                 },
 
                                 // markers
-                                markers: {
-                                  ...findFoodController.ridesWithin1km.value
-                                      .map(
-                                        (e) => Marker(
-                                          markerId: MarkerId(e.id),
-                                          position: LatLng(
-                                            e.pick_up.latitude,
-                                            e.pick_up.longitude,
+                                markers: findFoodController.currentRide.value ==
+                                        null
+                                    ? {
+                                        ...findFoodController
+                                            .ridesWithin1km.value
+                                            .map(
+                                              (e) => Marker(
+                                                markerId: MarkerId(e.id),
+                                                position: LatLng(
+                                                  e.pick_up.latitude,
+                                                  e.pick_up.longitude,
+                                                ),
+                                                icon: BitmapDescriptor
+                                                    .defaultMarker,
+                                              ),
+                                            )
+                                            .toSet(),
+                                      }
+                                    : {
+                                        if (findFoodController
+                                                .currentRide.value!.status ==
+                                            "goingToPickUp")
+                                          Marker(
+                                            markerId: const MarkerId('pick up'),
+                                            position: LatLng(
+                                                findFoodController.currentRide
+                                                    .value!.pick_up.latitude,
+                                                findFoodController.currentRide
+                                                    .value!.pick_up.longitude),
+                                            icon:
+                                                BitmapDescriptor.defaultMarker,
                                           ),
-                                          icon: BitmapDescriptor.defaultMarker,
-                                        ),
-                                      )
-                                      .toSet(),
-                                },
+                                        if (findFoodController
+                                                .currentRide.value!.status ==
+                                            "goingToDestination")
+                                          Marker(
+                                            markerId:
+                                                const MarkerId('destination'),
+                                            position: LatLng(
+                                                findFoodController
+                                                    .currentRide
+                                                    .value!
+                                                    .destination
+                                                    .latitude,
+                                                findFoodController
+                                                    .currentRide
+                                                    .value!
+                                                    .destination
+                                                    .longitude),
+                                            icon:
+                                                BitmapDescriptor.defaultMarker,
+                                          ),
+                                      },
 
                                 // circles
-                                circles: {
-                                  ...findFoodController.ridesWithin1km.value
-                                      .map(
-                                        (e) => Circle(
-                                          circleId: CircleId(e.id),
-                                          center: LatLng(e.pick_up.latitude,
-                                              e.pick_up.longitude),
-                                          radius: 1000,
-                                          fillColor: const Color.fromARGB(
-                                              91, 33, 149, 243),
-                                          strokeColor: Colors.blue,
-                                          strokeWidth: 1,
-                                        ),
-                                      )
-                                      .toSet(),
+                                circles: findFoodController.currentRide.value ==
+                                        null
+                                    ? {
+                                        ...findFoodController
+                                            .ridesWithin1km.value
+                                            .map(
+                                              (e) => Circle(
+                                                circleId: CircleId(e.id),
+                                                center: LatLng(
+                                                    e.pick_up.latitude,
+                                                    e.pick_up.longitude),
+                                                radius: 1000,
+                                                fillColor: const Color.fromARGB(
+                                                    91, 33, 149, 243),
+                                                strokeColor: Colors.blue,
+                                                strokeWidth: 1,
+                                              ),
+                                            )
+                                            .toSet(),
+                                      }
+                                    : {},
+
+                                // polylines
+                                polylines: {
+                                  Polyline(
+                                    polylineId:
+                                        const PolylineId('current ride route'),
+                                    points: findFoodController
+                                        .polylineCoordinates.value,
+                                    color: AppPallete.black,
+                                    width: 4,
+                                  ),
                                 },
                               ),
 
@@ -132,23 +190,6 @@ class FindFoodPage extends StatelessWidget {
                           child: Text('sadf'),
                         ),
                       ],
-                    ),
-                    Positioned(
-                      top: 40,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: AppPallete.white,
-                          border: Border.all(color: AppPallete.black),
-                        ),
-                        child: Text(
-                          findFoodController.currentRide.value.toString(),
-                          maxLines: 2,
-                        ),
-                      ),
                     ),
 
                     //
@@ -413,9 +454,10 @@ class CurrentRideCard extends StatelessWidget {
               toggleColor: AppPallete.white,
               iconAlignment: Alignment.center,
               child: Text(
-                findFoodController.currentRide.value!.status == "goingToPickUp"
-                    ? 'Slide to pick up passenger'
-                    : 'Slide to drop off passenger',
+                findFoodController.currentRide.value!.status,
+                //  == "goingToPickUp"
+                //     ? 'Slide to pick up passenger'
+                //     : 'Slide to drop off passenger',
                 style: const TextStyle(color: AppPallete.white),
               ),
               action: (controller) async {

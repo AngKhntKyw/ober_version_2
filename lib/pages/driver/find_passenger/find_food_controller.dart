@@ -3,8 +3,11 @@ import 'dart:developer';
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:ober_version_2/core/models/address_model.dart';
 // import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:geolocator/geolocator.dart';
@@ -93,6 +96,9 @@ class FindFoodController extends GetxController {
   // user info
   var userModel = Rx<UserModel?>(null);
 
+  // current ride
+  var polylineCoordinates = Rx<List<LatLng>>([]);
+
   @override
   void onInit() {
     getUserInfo();
@@ -158,11 +164,27 @@ class FindFoodController extends GetxController {
       //   await updateUI();
       //   await filterRidesWithin1km();
       // });
+
       locationSubscription =
           Geolocator.getPositionStream().listen((locationData) async {
         currentLocation.value = locationData;
+
+        if (currentRide.value == null) {
+          await filterRidesWithin1km();
+        } else {
+          await getDestinationPolyPoints();
+          await updateDriverLocation(
+            address: AddressModel(
+              name: '',
+              latitude: currentLocation.value!.latitude,
+              longitude: currentLocation.value!.longitude,
+              rotation: currentLocation.value!.heading,
+              speed: currentLocation.value!.speed,
+            ),
+          );
+        }
+
         await updateUI();
-        await filterRidesWithin1km();
       });
     } catch (e) {
       log("Error getting location update: $e");
@@ -173,13 +195,21 @@ class FindFoodController extends GetxController {
     try {
       mapController.future.then(
         (value) {
-          value.animateCamera(
-            CameraUpdate.newLatLngZoom(
-              LatLng(currentLocation.value!.latitude,
-                  currentLocation.value!.longitude),
-              zoom ?? zoomLevel.value,
-            ),
-          );
+          currentRide.value == null
+              ? value.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                    LatLng(currentLocation.value!.latitude,
+                        currentLocation.value!.longitude),
+                    zoom ?? zoomLevel.value,
+                  ),
+                )
+              : value
+                  .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+                  target: LatLng(currentLocation.value!.latitude,
+                      currentLocation.value!.longitude),
+                  zoom: zoom ?? zoomLevel.value,
+                  bearing: currentLocation.value!.heading,
+                )));
         },
       );
     } catch (e) {
@@ -239,15 +269,16 @@ class FindFoodController extends GetxController {
 
   Future<void> acceptBooking({required RideModel ride}) async {
     try {
-      log(ride.toString());
-      await fireStore
-          .collection('users')
-          .doc(fireAuth.currentUser!.uid)
-          .update({"current_ride_id": ride.id});
+      //
       await fireStore.collection('rides').doc(ride.id).update({
         "driver": userModel.value!.toJson(),
         "status": "goingToPickUp",
       });
+      //
+      await fireStore
+          .collection('users')
+          .doc(fireAuth.currentUser!.uid)
+          .update({"current_ride_id": ride.id});
     } catch (e) {
       toast("$e");
     }
@@ -263,11 +294,70 @@ class FindFoodController extends GetxController {
     await fireStore.collection('rides').doc(currentRide.value!.id).update({
       "status": "completeRide",
     });
-    await fireStore.collection('rides').doc(currentRide.value!.id).delete();
+    // await fireStore.collection('rides').doc(currentRide.value!.id).delete();
 
     await fireStore
         .collection('users')
         .doc(fireAuth.currentUser!.uid)
         .update({"current_ride_id": null});
+    polylineCoordinates.value.clear();
+  }
+
+  Future<void> getDestinationPolyPoints() async {
+    log('getting line...for ${currentRide.value!.status}');
+    try {
+      PolylinePoints polylinePoints = PolylinePoints();
+      PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY']!,
+        request: PolylineRequest(
+          origin: PointLatLng(currentLocation.value!.latitude,
+              currentLocation.value!.longitude),
+          destination: currentRide.value!.status == "goingToPickUp"
+              ? PointLatLng(currentRide.value!.pick_up.latitude,
+                  currentRide.value!.pick_up.longitude)
+              : PointLatLng(currentRide.value!.destination.latitude,
+                  currentRide.value!.destination.longitude),
+          mode: TravelMode.driving,
+          alternatives: true,
+          avoidFerries: true,
+          avoidHighways: true,
+          avoidTolls: true,
+        ),
+      );
+
+      if (result.points.isNotEmpty) {
+        polylineCoordinates.value.clear();
+
+        for (var point in result.points) {
+          polylineCoordinates.value.add(
+            LatLng(point.latitude, point.longitude),
+          );
+        }
+      }
+      log("Polyline: ${polylineCoordinates.value.length}");
+    } catch (e) {
+      toast(e.toString());
+    }
+  }
+
+  Future<void> updateDriverLocation({required AddressModel address}) async {
+    try {
+      currentRide.value = currentRide.value!.copyWith(
+          driver: userModel.value!.copyWith(
+              current_address: AddressModel(
+        name: address.name,
+        latitude: address.latitude,
+        longitude: address.longitude,
+        rotation: address.rotation,
+        speed: address.speed,
+      )));
+
+      await fireStore
+          .collection('rides')
+          .doc(currentRide.value!.passenger.user_id)
+          .update(currentRide.toJson());
+    } catch (e) {
+      toast(e.toString());
+    }
   }
 }
