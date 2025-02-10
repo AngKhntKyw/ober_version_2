@@ -5,9 +5,10 @@ import 'package:compassx/compassx.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/ride_model.dart';
 import 'package:overlay_support/overlay_support.dart';
 
@@ -22,10 +23,10 @@ class PassengerRideProcessController extends GetxController {
   var previousHeading = Rx<double>(0.0);
 
   // google map
-  Location location = Location();
+  // Location location = Location();
   Completer<GoogleMapController> mapController = Completer();
-  StreamSubscription<LocationData>? locationSubscription;
-  var currentLocation = Rx<LocationData?>(null);
+  StreamSubscription<Position>? locationSubscription;
+  var currentLocation = Rx<Position?>(null);
   var zoomLevel = Rx<double>(16);
   final String mapStyle = '''
   [
@@ -43,7 +44,7 @@ class PassengerRideProcessController extends GetxController {
       "elementType": "labels",
       "stylers": [
         {
-          "visibility": "on"
+          "visibility": "off"
         }
       ]
     },
@@ -120,13 +121,13 @@ class PassengerRideProcessController extends GetxController {
   }
 
   void getInitialLocation() async {
-    currentLocation.value = await location.getLocation();
+    currentLocation.value = await Geolocator.getCurrentPosition();
   }
 
   Future<void> getCurrentLocationOnUpdate() async {
     try {
       locationSubscription =
-          location.onLocationChanged.listen((LocationData locationData) async {
+          Geolocator.getPositionStream().listen((Position locationData) async {
         currentLocation.value = locationData;
         await updateUI();
       });

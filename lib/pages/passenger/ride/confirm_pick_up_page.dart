@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:ober_version_2/core/models/address_model.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
 import 'package:ober_version_2/pages/passenger/ride/confrim_ride_page.dart';
@@ -16,14 +17,14 @@ class ConfirmPickUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = Location();
+    // final location = Location();
     final Completer<GoogleMapController> mapController = Completer();
     final rideController = Get.put(RideController());
 
 //
     return Scaffold(
       body: StreamBuilder(
-        stream: location.onLocationChanged,
+        stream: Geolocator.getPositionStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const LoadingIndicators();
