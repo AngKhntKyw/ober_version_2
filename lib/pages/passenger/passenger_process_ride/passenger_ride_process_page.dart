@@ -1,14 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:ober_version_2/core/themes/app_pallete.dart';
-import 'package:ober_version_2/core/widgets/elevated_buttons.dart';
 import 'package:ober_version_2/core/widgets/loading_indicators.dart';
-import 'package:ober_version_2/pages/passenger/passenger_nav_bar_page.dart';
 import 'package:ober_version_2/pages/passenger/passenger_process_ride/passenger_ride_process_controller.dart';
+import 'package:ober_version_2/pages/passenger/passenger_process_ride/widgets/draggable_scroll_sheet.dart';
+import 'package:ober_version_2/pages/passenger/passenger_process_ride/widgets/indicator_icons_widget.dart';
+import 'package:ober_version_2/pages/passenger/passenger_process_ride/widgets/map_markers_widget.dart';
 
 class PassengerRideProcessPage extends StatelessWidget {
   const PassengerRideProcessPage({super.key});
@@ -17,7 +16,6 @@ class PassengerRideProcessPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final passengerRideProcessController =
         Get.put(PassengerRideProcessController());
-    final size = MediaQuery.sizeOf(context);
 
     return Scaffold(
       body: Obx(
@@ -43,7 +41,6 @@ class PassengerRideProcessPage extends StatelessWidget {
                                 buildingsEnabled: false,
                                 liteModeEnabled: false,
                                 scrollGesturesEnabled: true,
-
                                 zoomGesturesEnabled: true,
                                 myLocationButtonEnabled: false,
                                 initialCameraPosition: CameraPosition(
@@ -55,130 +52,26 @@ class PassengerRideProcessPage extends StatelessWidget {
                                   ),
                                   zoom: 10,
                                 ),
+
+                                // on Map created
                                 onMapCreated: (controller) async {
-                                  passengerRideProcessController.mapController
-                                      .complete(controller);
-
-                                  await Future.delayed(
-                                      const Duration(seconds: 2));
-
-                                  await passengerRideProcessController.updateUI(
-                                      location: LatLng(
-                                          passengerRideProcessController
-                                              .currentLocation.value!.latitude,
-                                          passengerRideProcessController
-                                              .currentLocation
-                                              .value!
-                                              .longitude),
-                                      zoom: 16);
-
-                                  await Future.delayed(
-                                      const Duration(seconds: 2));
-
-                                  await passengerRideProcessController
-                                      .getCurrentLocationOnUpdate();
-
-                                  await passengerRideProcessController
-                                      .getDestinationPolyPoints(
-                                    origin: PointLatLng(
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .pick_up
-                                            .latitude,
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .pick_up
-                                            .longitude),
-                                    destination: PointLatLng(
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .destination
-                                            .latitude,
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .destination
-                                            .longitude),
+                                  onMapCreated(
+                                    passengerRideProcessController:
+                                        passengerRideProcessController,
+                                    controller: controller,
                                   );
                                 },
+
+                                // on Camera moved
                                 onCameraMove: (position) {
                                   passengerRideProcessController.onCameraMoved(
                                       position: position);
                                 },
 
                                 // markers
-                                markers: {
-                                  Marker(
-                                    icon: BitmapDescriptor.defaultMarker,
-                                    markerId: const MarkerId('pick up'),
-                                    position: LatLng(
-                                      passengerRideProcessController
-                                          .currentRide.value!.pick_up.latitude,
-                                      passengerRideProcessController
-                                          .currentRide.value!.pick_up.longitude,
-                                    ),
-                                    infoWindow: InfoWindow(
-                                      title: passengerRideProcessController
-                                          .currentRide.value!.pick_up.name,
-                                      snippet: "pick up",
-                                    ),
-                                  ),
-                                  Marker(
-                                    icon: BitmapDescriptor.defaultMarker,
-                                    markerId: const MarkerId('destination'),
-                                    position: LatLng(
-                                      passengerRideProcessController.currentRide
-                                          .value!.destination.latitude,
-                                      passengerRideProcessController.currentRide
-                                          .value!.destination.longitude,
-                                    ),
-                                    infoWindow: InfoWindow(
-                                      title: passengerRideProcessController
-                                          .currentRide.value!.destination.name,
-                                      snippet: "destination",
-                                    ),
-                                  ),
-
-                                  // driver marker
-                                  if (passengerRideProcessController
-                                              .currentRide.value!.driver !=
-                                          null &&
-                                      passengerRideProcessController
-                                              .currentRide.value!.status ==
-                                          "goingToPickUp" &&
-                                      passengerRideProcessController.currentRide
-                                              .value!.driver!.current_address !=
-                                          null)
-                                    Marker(
-                                      icon: passengerRideProcessController
-                                          .driverLocationIcon.value,
-                                      markerId: const MarkerId('driver'),
-                                      position: LatLng(
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .driver!
-                                            .current_address!
-                                            .latitude,
-                                        passengerRideProcessController
-                                            .currentRide
-                                            .value!
-                                            .driver!
-                                            .current_address!
-                                            .longitude,
-                                      ),
-                                      anchor: const Offset(0.5, 0.5),
-                                      rotation: passengerRideProcessController
-                                          .currentRide
-                                          .value!
-                                          .driver!
-                                          .current_address!
-                                          .rotation,
-                                    ),
-                                },
+                                markers: MapMarkers.createMarkers(
+                                  passengerRideProcessController,
+                                ),
 
                                 // polylines
                                 polylines: {
@@ -192,247 +85,63 @@ class PassengerRideProcessPage extends StatelessWidget {
                                 },
                               ),
 
-                              //
-                              if (passengerRideProcessController
-                                          .currentRide.value !=
-                                      null &&
-                                  passengerRideProcessController
-                                          .currentRide.value!.status !=
-                                      "goingToDestination")
-                                AnimatedRotation(
-                                  turns: passengerRideProcessController
-                                      .compassHeading.value,
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.linear,
-                                  alignment: Alignment.center,
-                                  child: Image.asset(
-                                    'assets/images/navigation.png',
-                                    height: 30,
-                                    width: 30,
-                                    filterQuality: FilterQuality.high,
-                                  ),
-                                ),
+                              // Indicator Icons
+                              IndicatorIconsWidget(
+                                passengerRideProcessController:
+                                    passengerRideProcessController,
+                              ),
 
-                              // driver position
-                              if (passengerRideProcessController
-                                          .currentRide.value !=
-                                      null &&
-                                  passengerRideProcessController
-                                          .currentRide.value!.status ==
-                                      "goingToDestination")
-                                AnimatedRotation(
-                                  turns: passengerRideProcessController
-                                      .driverRotation.value,
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.linear,
-                                  alignment: Alignment.center,
-                                  child: Image.asset(
-                                    'assets/images/car.png',
-                                    height: 40,
-                                    width: 40,
-                                    filterQuality: FilterQuality.high,
-                                  ),
-                                ),
+                              //
                             ],
                           ),
                         ),
-                        Expanded(
+                        const Expanded(
                           flex: 2,
                           child: Center(
-                            child: Text(passengerRideProcessController
-                                        .currentRide.value !=
-                                    null
-                                ? passengerRideProcessController
-                                    .currentRide.value!.status
-                                : "OK"),
+                            child: Text("OK"),
                           ),
                         ),
                       ],
                     ),
-                    DraggableScrollableSheet(
-                      initialChildSize: 0.3,
-                      maxChildSize: 1,
-                      minChildSize: 0.3,
-                      snapAnimationDuration: const Duration(milliseconds: 300),
-                      builder: (context, scrollController) {
-                        return Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20),
-                              topRight: Radius.circular(20),
-                            ),
-                            color: AppPallete.white,
-                            border: Border.all(color: AppPallete.black),
-                          ),
-                          child: SingleChildScrollView(
-                            controller: scrollController,
-                            child: passengerRideProcessController
-                                        .currentRide.value!.status !=
-                                    "completeRide"
-                                ? Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(passengerRideProcessController
-                                          .currentRide.value!.status),
-                                      SizedBox(height: size.height / 40),
 
-                                      //
-                                      if (passengerRideProcessController
-                                              .currentRide.value!.status !=
-                                          "booking")
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                CircleAvatar(
-                                                  radius: 22,
-                                                  backgroundColor:
-                                                      AppPallete.black,
-                                                  child: CircleAvatar(
-                                                    radius: 20,
-                                                    backgroundColor:
-                                                        AppPallete.black,
-                                                    backgroundImage:
-                                                        CachedNetworkImageProvider(
-                                                            passengerRideProcessController
-                                                                .currentRide
-                                                                .value!
-                                                                .driver!
-                                                                .profile_image),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                    width: size.width / 20),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                        passengerRideProcessController
-                                                            .currentRide
-                                                            .value!
-                                                            .driver!
-                                                            .name),
-                                                    Text(
-                                                        passengerRideProcessController
-                                                            .currentRide
-                                                            .value!
-                                                            .driver!
-                                                            .email),
-                                                    Text(
-                                                        "${passengerRideProcessController.currentRide.value!.driver!.car!.name}-${passengerRideProcessController.currentRide.value!.driver!.car!.color}"),
-                                                    Text(
-                                                        passengerRideProcessController
-                                                            .currentRide
-                                                            .value!
-                                                            .driver!
-                                                            .car!
-                                                            .plate_number),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            CircleAvatar(
-                                              backgroundColor: AppPallete.black,
-                                              child: IconButton(
-                                                onPressed: () {},
-                                                icon: const Icon(
-                                                  Icons.call,
-                                                  color: AppPallete.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                      //
-
-                                      SizedBox(height: size.height / 40),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                              "${passengerRideProcessController.currentRide.value!.fare} MMKs"),
-                                          Text(passengerRideProcessController
-                                              .currentRide.value!.distance),
-                                        ],
-                                      ),
-                                      Text(passengerRideProcessController
-                                          .currentRide.value!.duration),
-                                      SizedBox(height: size.height / 40),
-                                      const Text("Destination"),
-                                      SizedBox(height: size.height / 80),
-                                      Text(passengerRideProcessController
-                                          .currentRide.value!.destination.name),
-                                      SizedBox(height: size.height / 40),
-                                      const Text("Pick up"),
-                                      SizedBox(height: size.height / 80),
-                                      Text(passengerRideProcessController
-                                          .currentRide.value!.pick_up.name),
-                                      SizedBox(height: size.height / 40),
-                                      ElevatedButtons(
-                                        onPressed: () async {
-                                          await passengerRideProcessController
-                                              .cancelBooking();
-                                          Get.offAll(
-                                              const PassengerNavBarPage());
-                                        },
-                                        buttonName: "Cancel booking",
-                                      ),
-                                    ],
-                                  )
-
-                                //
-                                : Center(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text("Ride Complete"),
-                                        SizedBox(height: size.height / 40),
-                                        const Text("Please give us Five Stars"),
-                                        SizedBox(height: size.height / 40),
-                                        RatingBar.builder(
-                                          initialRating: 3,
-                                          minRating: 1,
-                                          direction: Axis.horizontal,
-                                          allowHalfRating: true,
-                                          itemCount: 5,
-                                          itemPadding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 4.0),
-                                          itemBuilder: (context, _) =>
-                                              const Icon(Icons.star,
-                                                  color: Colors.amber),
-                                          onRatingUpdate: (rating) {},
-                                        ),
-                                        SizedBox(height: size.height / 40),
-                                        ElevatedButtons(
-                                          onPressed: () async {
-                                            await passengerRideProcessController
-                                                .cancelBooking();
-                                            Get.offAll(
-                                                const PassengerNavBarPage());
-                                          },
-                                          buttonName: "Complete",
-                                        ),
-                                        SizedBox(height: size.height / 40),
-                                      ],
-                                    ),
-                                  ),
-                          ),
-                        );
-                      },
-                    )
+                    // scroll sheet
+                    DraggableScrollSheet(
+                      passengerRideProcessController:
+                          passengerRideProcessController,
+                    ),
                   ],
                 );
         },
       ),
     );
   }
+}
+
+void onMapCreated({
+  required PassengerRideProcessController passengerRideProcessController,
+  required GoogleMapController controller,
+}) async {
+  passengerRideProcessController.mapController.complete(controller);
+
+  await Future.delayed(const Duration(seconds: 2));
+
+  await passengerRideProcessController.updateUI(
+      location: LatLng(
+          passengerRideProcessController.currentLocation.value!.latitude,
+          passengerRideProcessController.currentLocation.value!.longitude),
+      zoom: 16);
+
+  await Future.delayed(const Duration(seconds: 2));
+
+  await passengerRideProcessController.getCurrentLocationOnUpdate();
+
+  await passengerRideProcessController.getDestinationPolyPoints(
+    origin: PointLatLng(
+        passengerRideProcessController.currentRide.value!.pick_up.latitude,
+        passengerRideProcessController.currentRide.value!.pick_up.longitude),
+    destination: PointLatLng(
+        passengerRideProcessController.currentRide.value!.destination.latitude,
+        passengerRideProcessController
+            .currentRide.value!.destination.longitude),
+  );
 }
