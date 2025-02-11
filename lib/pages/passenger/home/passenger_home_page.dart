@@ -49,7 +49,15 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
             children: [
               Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    //
+
+                    //
+
+                    //
+
+                    //
                     Container(
                       alignment: Alignment.center,
                       width: size.width,
@@ -178,88 +186,50 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                     ),
 
                     //
-
+                    const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text("Learn more"),
+                    ),
                     //
-                    Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      width: size.width,
-                      height: size.width / 3,
+                    Padding(
+                      padding: const EdgeInsets.all(10),
                       child: CarouselSlider(
                         items: [
-                          Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl:
-                                    "https://plus.unsplash.com/premium_photo-1661510316006-45fb0f58f5d9?q=80&w=2060&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                fit: BoxFit.cover,
-                                width: size.width,
-                                height: size.width / 3,
-                              ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  "https://plus.unsplash.com/premium_photo-1661510316006-45fb0f58f5d9?q=80&w=2060&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                              fit: BoxFit.cover,
+                              width: size.width,
+                              height: size.width / 3,
                             ),
                           ),
-                          Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl:
-                                    "https://images.unsplash.com/photo-1540567233509-b1256189865d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                fit: BoxFit.cover,
-                                width: size.width,
-                                height: size.width / 3,
-                              ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  "https://plus.unsplash.com/premium_photo-1661911000633-3320fe8b6901?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                              fit: BoxFit.cover,
+                              width: size.width,
+                              height: size.width / 3,
                             ),
                           ),
-                          Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl:
-                                    "https://images.unsplash.com/photo-1550837725-56d9e2f0d89b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                fit: BoxFit.cover,
-                                width: size.width,
-                                height: size.width / 3,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl:
-                                    "https://images.unsplash.com/photo-1585136092109-8b34f4796de2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                fit: BoxFit.cover,
-                                width: size.width,
-                                height: size.width / 3,
-                              ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  "https://plus.unsplash.com/premium_photo-1661674175250-014a63bb3e2c?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                              fit: BoxFit.cover,
+                              width: size.width,
+                              height: size.width / 3,
                             ),
                           ),
                         ],
                         options: CarouselOptions(
-                          height: size.width / 3,
-                          aspectRatio: 16 / 10,
-                          viewportFraction: 0.8,
+                          height: size.height / 4,
+                          aspectRatio: 16 / 9,
+                          viewportFraction: 1,
                           initialPage: 0,
                           enableInfiniteScroll: false,
                           reverse: false,
@@ -275,6 +245,8 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                         ),
                       ),
                     ),
+
+                    //
                   ],
                 ),
               ),
