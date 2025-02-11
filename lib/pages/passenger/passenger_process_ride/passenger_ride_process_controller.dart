@@ -94,6 +94,7 @@ class PassengerRideProcessController extends GetxController {
 
   // driver
   var driverLocationIcon = Rx<BitmapDescriptor>(BitmapDescriptor.defaultMarker);
+  var driverRotation = Rx<double>(0.0); // Stores the rotation value in turns
 
   //
   @override
@@ -142,7 +143,15 @@ class PassengerRideProcessController extends GetxController {
       locationSubscription =
           Geolocator.getPositionStream().listen((Position locationData) async {
         currentLocation.value = locationData;
-        await updateUI();
+
+        //
+        currentRide.value!.status != "goingToDestination"
+            ? await updateUI(
+                location: LatLng(
+                currentLocation.value!.latitude,
+                currentLocation.value!.longitude,
+              ))
+            : null;
       });
     } catch (e) {
       log("Error getting location update: $e");
@@ -155,23 +164,33 @@ class PassengerRideProcessController extends GetxController {
         .doc(fireAuth.currentUser!.uid)
         .snapshots()
         .listen(
-      (event) {
+      (event) async {
         if (event.exists) {
           currentRide.value = RideModel.fromJson(event.data()!);
-          currentRide.value!.status == "goingToPickUp"
-              ? getDestinationPolyPoints(
-                  origin: PointLatLng(
-                      currentRide.value!.driver!.current_address!.latitude,
-                      currentRide.value!.driver!.current_address!.longitude),
-                  destination: PointLatLng(currentRide.value!.pick_up.latitude,
-                      currentRide.value!.pick_up.longitude))
-              : getDestinationPolyPoints(
-                  origin: PointLatLng(
-                      currentRide.value!.driver!.current_address!.latitude,
-                      currentRide.value!.driver!.current_address!.longitude),
-                  destination: PointLatLng(
-                      currentRide.value!.destination.latitude,
-                      currentRide.value!.destination.longitude));
+
+          //
+          if (currentRide.value!.status == "goingToPickUp") {
+            await getDestinationPolyPoints(
+                origin: PointLatLng(
+                    currentRide.value!.driver!.current_address!.latitude,
+                    currentRide.value!.driver!.current_address!.longitude),
+                destination: PointLatLng(currentRide.value!.pick_up.latitude,
+                    currentRide.value!.pick_up.longitude));
+          } else if (currentRide.value!.status == "completeRide") {
+            polylineCoordinates.value.clear();
+          } else {
+            await getDestinationPolyPoints(
+                origin: PointLatLng(
+                    currentRide.value!.driver!.current_address!.latitude,
+                    currentRide.value!.driver!.current_address!.longitude),
+                destination: PointLatLng(
+                    currentRide.value!.destination.latitude,
+                    currentRide.value!.destination.longitude));
+            await updateUI(
+                location: LatLng(
+                    currentRide.value!.driver!.current_address!.latitude,
+                    currentRide.value!.driver!.current_address!.longitude));
+          }
         } else {
           currentRide.value = null;
           log(" just deleted ");
@@ -213,18 +232,18 @@ class PassengerRideProcessController extends GetxController {
     }
   }
 
-  Future<void> updateUI({double? zoom}) async {
+  Future<void> updateUI({double? zoom, required LatLng location}) async {
     try {
       mapController.future.then(
         (value) {
           value.animateCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(
-                target: LatLng(
-                  currentLocation.value!.latitude,
-                  currentLocation.value!.longitude,
-                ),
+                target: location,
                 zoom: zoom ?? zoomLevel.value,
+                bearing: currentRide.value!.status == "goingToDestination"
+                    ? currentRide.value!.driver!.current_address!.rotation
+                    : 0,
               ),
             ),
           );
@@ -237,6 +256,23 @@ class PassengerRideProcessController extends GetxController {
 
   void onCameraMoved({required CameraPosition position}) {
     zoomLevel.value = position.zoom;
+    if (currentRide.value!.status == "goingToDestination") {
+      double cameraBearing = position.bearing; // Camera's bearing in degrees
+      double driverHeading = currentRide.value!.driver!.current_address!
+          .rotation; // Driver's heading in degrees
+
+      // Calculate the relative rotation
+      double relativeRotation = (driverHeading - cameraBearing) % 360;
+      if (relativeRotation < 0) {
+        relativeRotation += 360; // Ensure the value is positive
+      }
+
+      // Convert relative rotation to turns (1 turn = 360 degrees)
+      double turns = relativeRotation / 360.0;
+
+      // Update the rotation value
+      driverRotation.value = turns;
+    }
   }
 
   Future<void> cancelBooking() async {

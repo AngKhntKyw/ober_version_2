@@ -173,7 +173,7 @@ class FindFoodPage extends StatelessWidget {
                                 curve: Curves.linear,
                                 alignment: Alignment.center,
                                 child: Opacity(
-                                  opacity: 0.2,
+                                  opacity: 1,
                                   child: Image.asset(
                                     'assets/images/car.png',
                                     height: 40,
