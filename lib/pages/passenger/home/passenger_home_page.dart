@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +107,8 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                         ],
                       ),
                     ),
+
+                    //
                     Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -172,9 +176,110 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                         ],
                       ),
                     ),
+
+                    //
+
+                    //
+                    Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      width: size.width,
+                      height: size.width / 3,
+                      child: CarouselSlider(
+                        items: [
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    "https://plus.unsplash.com/premium_photo-1661510316006-45fb0f58f5d9?q=80&w=2060&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                                fit: BoxFit.cover,
+                                width: size.width,
+                                height: size.width / 3,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    "https://images.unsplash.com/photo-1540567233509-b1256189865d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                                fit: BoxFit.cover,
+                                width: size.width,
+                                height: size.width / 3,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    "https://images.unsplash.com/photo-1550837725-56d9e2f0d89b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                                fit: BoxFit.cover,
+                                width: size.width,
+                                height: size.width / 3,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.black),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl:
+                                    "https://images.unsplash.com/photo-1585136092109-8b34f4796de2?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                                fit: BoxFit.cover,
+                                width: size.width,
+                                height: size.width / 3,
+                              ),
+                            ),
+                          ),
+                        ],
+                        options: CarouselOptions(
+                          height: size.width / 3,
+                          aspectRatio: 16 / 10,
+                          viewportFraction: 0.8,
+                          initialPage: 0,
+                          enableInfiniteScroll: false,
+                          reverse: false,
+                          autoPlay: true,
+                          autoPlayInterval: const Duration(seconds: 5),
+                          autoPlayAnimationDuration:
+                              const Duration(milliseconds: 800),
+                          autoPlayCurve: Curves.fastOutSlowIn,
+                          enlargeCenterPage: true,
+                          enlargeFactor: 0.3,
+                          onPageChanged: (index, reason) {},
+                          scrollDirection: Axis.horizontal,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
+
+              //
 
               //
 
@@ -220,8 +325,9 @@ class _PassengerHomePageState extends State<PassengerHomePage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text("Current Ride"),
-                                Text(passengerHomeController
-                                    .currentRide.value!.id),
+                                Text(
+                                  passengerHomeController.currentRide.value!.id,
+                                ),
                               ],
                             ),
                           ],
